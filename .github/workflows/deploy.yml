@@ -48,10 +48,7 @@ jobs:
             --image ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/covounding:${{ github.sha }} \
             --region ${{ env.GAR_LOCATION }} \
             --service-account ${{ env.SERVICE_ACCOUNT }} \
-            --execution-environment gen2 \
-            --add-volume name=gcs,type=cloud-storage,bucket=${{ env.DB_BUCKET }} \
-            --add-volume-mount volume=gcs,mount-path=/mnt/gcs \
-            --set-env-vars "NODE_ENV=production,DATABASE_URL=file:/mnt/gcs/dev.db" \
+            --set-env-vars "NODE_ENV=production,DATABASE_URL=file:./dev.db" \
             --set-secrets "BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest,VITE_VOUNDISM_SECRET=VITE_VOUNDISM_SECRET:latest" \
             --allow-unauthenticated \
             --port 8080 \
@@ -69,10 +66,7 @@ jobs:
             --image ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/vounder:${{ github.sha }} \
             --region ${{ env.GAR_LOCATION }} \
             --service-account ${{ env.SERVICE_ACCOUNT }} \
-            --execution-environment gen2 \
-            --add-volume name=gcs,type=cloud-storage,bucket=${{ env.DB_BUCKET }} \
-            --add-volume-mount volume=gcs,mount-path=/mnt/gcs \
-            --set-env-vars "NODE_ENV=production,DATABASE_URL=file:/mnt/gcs/dev.db" \
+            --set-env-vars "NODE_ENV=production,DATABASE_URL=file:./dev.db" \
             --set-secrets "BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest" \
             --allow-unauthenticated \
             --port 8080 \
