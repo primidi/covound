@@ -22,6 +22,9 @@ RUN npm ci
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Install openssl for Prisma generation on Alpine
+RUN apk add --no-cache openssl
+
 # Copy dependencies and source code
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
