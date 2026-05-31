@@ -53,7 +53,9 @@ jobs:
             --add-volume-mount volume=gcs,mount-path=/mnt/gcs \
             --set-env-vars "NODE_ENV=production,DATABASE_URL=file:/mnt/gcs/dev.db" \
             --set-secrets "BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest,VITE_VOUNDISM_SECRET=VITE_VOUNDISM_SECRET:latest" \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --port 8080 \
+            --timeout 300
 
       # 🛡️ Deploy Vounder (Admin Board)
       - name: Build and Push Vounder
@@ -72,4 +74,6 @@ jobs:
             --add-volume-mount volume=gcs,mount-path=/mnt/gcs \
             --set-env-vars "NODE_ENV=production,DATABASE_URL=file:/mnt/gcs/dev.db" \
             --set-secrets "BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest" \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --port 8080 \
+            --timeout 300

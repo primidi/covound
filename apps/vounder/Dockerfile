@@ -59,7 +59,7 @@ RUN chmod +x ./scripts/prod-start.sh
 RUN npm ci --omit=dev --ignore-scripts
 
 # Expose port
-EXPOSE 3000
+EXPOSE 8080
 
 # Start command via script
 ENTRYPOINT ["/bin/sh", "./scripts/prod-start.sh"]
