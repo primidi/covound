@@ -1,11 +1,9 @@
-import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaClient } from "../generated/client/index.js";
 
-const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const { PrismaClient } = require("../generated/client/index.js");
 
 /**
  * Shared database connection for the CoVound monorepo.
@@ -16,11 +14,11 @@ function createPrismaClient(dbUrl?: string) {
   const dbPath = connectionString.replace(/^file:/, "");
 
   // Ensure we use an absolute path for better-sqlite3
-  // If the path is relative, force it to be relative to the prisma directory
-  // to match Prisma CLI behavior.
+  // When running in production (Cloud Run), relative paths like ./dev.db 
+  // should resolve to the container's working directory (/app).
   const absolutePath = path.isAbsolute(dbPath)
     ? dbPath
-    : path.resolve(__dirname, "..", "prisma", path.basename(dbPath));
+    : path.resolve(process.cwd(), dbPath);
 
   const adapter = new PrismaBetterSqlite3({ url: absolutePath });
   return new PrismaClient({ adapter });
