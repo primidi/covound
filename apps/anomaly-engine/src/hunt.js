@@ -73,7 +73,7 @@ async function hunt(targetSource, isUrl = false) {
           `✅ Validated Threat: ${validated.value} claiming to be ${finding.institutionClaimed}`,
         );
         // TODO: Persist to DB once AnomalyReport schema is finalized
-      } catch (err) {
+      } catch (_err) {
         console.warn(`❌ Invalid finding skipped: ${finding.number}`);
       }
     }

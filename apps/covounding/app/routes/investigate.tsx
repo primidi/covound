@@ -1,5 +1,4 @@
 import { UserRole } from "@covound/db/types";
-import { getDiagnosis } from "@covound/logic";
 import { Badge } from "@covound/ui/components/ui/badge";
 import { Button } from "@covound/ui/components/ui/button";
 import {
@@ -32,7 +31,6 @@ import {
 } from "@covound/ui/components/ui/table";
 import {
   AlertCircle,
-  ArrowLeft,
   ChevronDown,
   Coins,
   Eye,
@@ -272,7 +270,7 @@ export async function action({ request }: { request: Request }) {
 
 export default function InvestigatorDashboard() {
   const { user, anomalies, lang: currentLang } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  const _fetcher = useFetcher();
   const actionData = useActionData() as any;
   const [previewEvidence, setPreviewEvidence] = useState<any[] | null>(null);
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);

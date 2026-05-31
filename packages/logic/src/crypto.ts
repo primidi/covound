@@ -116,7 +116,7 @@ export function encryptData(text: string, secretKey: string): string {
   );
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString("hex") + ":" + encrypted.toString("hex");
+  return `${iv.toString("hex")}:${encrypted.toString("hex")}`;
 }
 
 export function decryptData(text: string, secretKey: string): string {

@@ -24,13 +24,6 @@ import {
 import { Input } from "@covound/ui/components/ui/input";
 import { Label } from "@covound/ui/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@covound/ui/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -256,7 +249,7 @@ export async function action({ request }: ActionFunctionArgs) {
             name: `Admin Verified Legit: ${anomaly.detectedNumber}`,
             whatsapp: anomaly.detectedNumber,
             isOfficial: true,
-            signature: "ADMIN-CERTIFIED-LEGIT-" + Date.now(),
+            signature: `ADMIN-CERTIFIED-LEGIT-${Date.now()}`,
           },
         }),
       ]);

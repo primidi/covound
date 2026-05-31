@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { type ActionFunctionArgs, data } from "react-router";
-import { z } from "zod";
 import { extractScamMetadata } from "~/lib/gemini.server";
 import { redactImage } from "~/lib/redact.server";
 

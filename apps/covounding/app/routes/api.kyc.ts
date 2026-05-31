@@ -24,7 +24,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const nik = formData.get("nik") as string;
     const selfieFile = formData.get("selfie") as File;
 
-    if (!name || !nik || !selfieFile || !selfieFile.name) {
+    if (!name || !nik || !selfieFile?.name) {
       return Response.json(
         { error: "Missing required fields or selfie image." },
         { status: 400 },

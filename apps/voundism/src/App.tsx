@@ -32,7 +32,7 @@ function App() {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
   const forceSync = () => {
     if (typeof chrome !== "undefined" && chrome.tabs) {

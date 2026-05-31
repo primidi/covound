@@ -2,7 +2,6 @@ import { Badge } from "@covound/ui/components/ui/badge";
 import { Button, buttonVariants } from "@covound/ui/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -16,13 +15,10 @@ import {
 import {
   ArrowRight,
   ChevronDown,
-  Globe,
   HeartPulse,
   LogOut,
   Search,
   Shield,
-  Trophy,
-  User,
 } from "lucide-react";
 import type { MetaFunction } from "react-router";
 import {
@@ -31,13 +27,11 @@ import {
   useFetcher,
   useLoaderData,
   useNavigate,
-  useSearchParams,
 } from "react-router";
 import { prisma } from "~/db.server";
 import { authClient } from "~/lib/auth.client";
 import { auth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
-import type { Route } from "./+types/home";
 
 export const meta: MetaFunction = () => [{ title: "CoVound | Home" }];
 
@@ -111,10 +105,10 @@ export default function LandingPage() {
     lang: "en" | "id";
   };
   const fetcher = useFetcher();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const t = translations[lang as "en" | "id"];
 
-  const setLang = (newLang: string) => {
+  const _setLang = (newLang: string) => {
     fetcher.submit(
       { lang: newLang, redirectTo: "/" },
       { method: "post", action: "/api/lang" },

@@ -21,7 +21,6 @@ import { type ChangeEvent, useEffect, useState } from "react";
 import {
   type ActionFunctionArgs,
   data,
-  Link,
   type LoaderFunctionArgs,
   redirect,
   useFetcher,
@@ -108,7 +107,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 // In-memory rate limiter for simple sybil defense
 const rateLimitMap = new Map<string, number>();
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const _RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_ACCOUNTS_PER_IP = 10;
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -184,7 +183,7 @@ export async function action({ request }: ActionFunctionArgs) {
       "unknown-ip";
 
     // Rate limiting check
-    const now = Date.now();
+    const _now = Date.now();
     const requests = rateLimitMap.get(ip) || 0;
 
     if (requests >= MAX_ACCOUNTS_PER_IP) {
@@ -307,7 +306,7 @@ export default function Login() {
 
         window.location.reload();
       }
-    } catch (err) {
+    } catch (_err) {
       setError(t.errors.unexpected);
       setLoading(false);
     }

@@ -1,5 +1,4 @@
 import "dotenv/config";
-import path from "node:path";
 import { stdin as input, stdout as output } from "node:process";
 import readline from "node:readline/promises";
 import { auth } from "./auth.server.js";

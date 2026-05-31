@@ -19,7 +19,7 @@ function encrypt(text: string): string {
   );
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString("hex") + ":" + encrypted.toString("hex");
+  return `${iv.toString("hex")}:${encrypted.toString("hex")}`;
 }
 
 /**
@@ -80,7 +80,7 @@ export async function archiveExpiredIncidents() {
         try {
           await fs.unlink(rawPath);
           console.log(`✅ Permanently wiped raw evidence: ${rawPath}`);
-        } catch (e) {
+        } catch (_e) {
           console.warn(
             `⚠️ Failed to delete file (may already be gone): ${rawPath}`,
           );

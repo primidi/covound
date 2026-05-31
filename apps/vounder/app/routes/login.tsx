@@ -43,7 +43,7 @@ export default function Login() {
       } else {
         navigate("/admin");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);

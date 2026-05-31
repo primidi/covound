@@ -86,7 +86,7 @@ export function KYCModal({ isOpen, onClose, onVerified }: KYCModalProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !isVerifying && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(_open) => !isVerifying && onClose()}>
       <DialogContent className="sm:max-w-md min-w-[320px] p-0">
         <div className="bg-indigo-950 p-8 text-white relative overflow-hidden rounded-t-[2rem]">
           <div className="absolute top-0 right-0 p-4 opacity-10">

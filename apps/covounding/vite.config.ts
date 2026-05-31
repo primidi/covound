@@ -12,7 +12,7 @@ function extensionApiBypass(): Plugin {
   return {
     name: "extension-api-bypass",
     configureServer(server) {
-      server.middlewares.use(async (req, res, next) => {
+      server.middlewares.use(async (req, _res, next) => {
         const url = new URL(req.url || "", `http://${req.headers.host}`);
 
         if (
@@ -22,10 +22,7 @@ function extensionApiBypass(): Plugin {
           // If it's a POST or OPTIONS, we might need to handle it here
           // However, in dev mode, we can just strip the problematic Origin header
           // to fool the downstream CSRF check.
-          if (
-            req.headers.origin &&
-            req.headers.origin.startsWith("chrome-extension://")
-          ) {
+          if (req.headers.origin?.startsWith("chrome-extension://")) {
             console.log(
               `[Vite Middleware] Stripping Origin header for ${url.pathname} to bypass CSRF`,
             );

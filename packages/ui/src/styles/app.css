@@ -7,11 +7,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /* Fallback for Dialog centering since Tailwind v4 scanner might miss it in workspace packages */
-[data-slot=\"dialog-content\"] {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
+[data-slot="\"dialog-content\""] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 @theme {

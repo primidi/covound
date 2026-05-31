@@ -2,7 +2,6 @@ import { Badge } from "@covound/ui/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@covound/ui/components/ui/card";
@@ -14,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@covound/ui/components/ui/table";
-import { ArrowLeft, Medal, ShieldCheck, Star, Trophy } from "lucide-react";
+import { ArrowLeft, Medal, Star, Trophy } from "lucide-react";
 import type { MetaFunction } from "react-router";
 import { Link, useLoaderData } from "react-router";
 import { prisma } from "~/db.server";

@@ -24,7 +24,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     where: { id: kycReqId },
   });
 
-  if (!kycRequest || !kycRequest.selfiePath) {
+  if (!kycRequest?.selfiePath) {
     return new Response("Not found", { status: 404 });
   }
 

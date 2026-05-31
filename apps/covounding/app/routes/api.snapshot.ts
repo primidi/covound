@@ -23,7 +23,7 @@ export async function loader({ request }: { request: Request }) {
   // EARLY AUTH: Validate the secret
   try {
     validateExtensionAccess(request);
-  } catch (err: any) {
+  } catch (_err: any) {
     return data(
       { error: "Unauthorized" },
       { status: 401, headers: getCorsHeaders(request) },

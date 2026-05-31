@@ -6,7 +6,6 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-  CardHeader,
   CardTitle,
 } from "@covound/ui/components/ui/card";
 import {
@@ -253,7 +252,7 @@ export default function TriageRoom() {
       btn: "Masuk atau Daftar",
     },
   };
-  const rt = restrictedTranslations[lang];
+  const _rt = restrictedTranslations[lang];
 
   useEffect(() => {
     if (actionData && (actionData as any).success) {
