@@ -33,10 +33,10 @@ COPY . .
 ENV DATABASE_URL="file:/app/dev.db"
 
 # Generate Prisma Client
-RUN npm run db:generate --workspace=@covound/db
+RUN DATABASE_URL="file:/app/dev.db" npm run db:generate --workspace=@covound/db
 
 # Bake database into the image
-RUN npx prisma db push --schema=./packages/db/prisma/schema.prisma --accept-data-loss
+RUN DATABASE_URL="file:/app/dev.db" npx prisma db push --schema=./packages/db/prisma/schema.prisma --accept-data-loss
 
 # Build the application
 RUN npm run build --workspace=vounder
