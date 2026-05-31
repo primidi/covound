@@ -56,7 +56,7 @@ COPY --from=builder /app/scripts/prod-start.sh ./scripts/prod-start.sh
 RUN chmod +x ./scripts/prod-start.sh
 
 # Install production dependencies only
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # Expose port
 EXPOSE 3000
