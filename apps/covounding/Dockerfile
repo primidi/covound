@@ -49,8 +49,8 @@ ENV NODE_ENV=production
 # and monorepo workspace symlinks are perfectly intact for production.
 COPY --from=builder /app /app
 
-# Ensure script is executable
-RUN chmod +x ./scripts/prod-start.sh
+# Ensure script is executable and has correct UNIX line endings
+RUN sed -i 's/\r$//' ./scripts/prod-start.sh && chmod +x ./scripts/prod-start.sh
 
 # Expose port
 EXPOSE 8080
