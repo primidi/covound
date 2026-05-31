@@ -36,7 +36,7 @@ ENV DATABASE_URL="file:/app/dev.db"
 RUN DATABASE_URL="file:/app/dev.db" npm run db:generate --workspace=@covound/db
 
 # Bake database into the image
-RUN DATABASE_URL="file:/app/dev.db" npx prisma db push --schema=./packages/db/prisma/schema.prisma --accept-data-loss
+RUN DATABASE_URL="file:/app/dev.db" npx prisma db push --schema=./packages/db/prisma/schema.prisma --config=./packages/db/prisma.config.ts --accept-data-loss
 
 # Build the application
 RUN npm run build --workspace=vounder
