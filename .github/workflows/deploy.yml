@@ -8,7 +8,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GAR_LOCATION: us-central1
   REPOSITORY: covound-images
-  DB_BUCKET: covound-db-bucket
+  DB_BUCKET: covound-db-bucket-889836930910
   SERVICE_ACCOUNT: ${{ secrets.GCP_SA_EMAIL }}
   WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
 
