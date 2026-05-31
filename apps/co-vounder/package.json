@@ -1,0 +1,31 @@
+{
+  "name": "co-vounder",
+  "version": "1.0.0",
+  "description": "CoVound MCP Server",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node build/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "security"
+  ],
+  "author": "Gharis Primada Hariyono",
+  "license": "ISC",
+  "dependencies": {
+    "@covound/db": "*",
+    "@covound/logic": "*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^17.4.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "prisma": "latest",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

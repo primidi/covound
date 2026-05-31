@@ -1,0 +1,54 @@
+{
+  "name": "covound-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CoVound: Truth and Trust Founder Companion",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:vounder": "npm run dev --workspace=vounder",
+    "dev:co-vounder": "npm run dev --workspace=co-vounder",
+    "dev:voundism": "npm run dev --workspace=voundism",
+    "dev:covounding": "npm run dev --workspace=covounding",
+    "engine:hunt": "npm run start --workspace=anomaly-engine",
+    "workflows:up": "tsx scripts/run-workflows.ts",
+    "workflows:down": "tsx scripts/revert-workflows.ts",
+    "vounder:create": "npm run bootstrap --workspace=vounder",
+    "db:reset": "cd packages/db && npx prisma db push --force-reset && cd ../.. && tsx scripts/seed-qa.ts",
+    "db:clean": "tsx scripts/truncate-db.ts",
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
+  },
+  "keywords": [
+    "mcp",
+    "security",
+    "seo-poisoning",
+    "ai-hallucination",
+    "hackathon"
+  ],
+  "author": "Gharis Primada Hariyono",
+  "license": "ISC",
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.6.2",
+    "husky": "9.1.7",
+    "lint-staged": "16.4.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "better-auth": "^1.6.10",
+    "better-sqlite3": "^12.9.0"
+  }
+}

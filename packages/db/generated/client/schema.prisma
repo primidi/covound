@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Institution {
+  id              String            @id @default(cuid())
+  name            String            @unique
+  domain          String? // for /.well-known/covound-key.json
+  publicKey       String? // PEM formatted
+  officialWebsite String?
+  officialHotline String?
+  recoverySteps   String? // JSON or stringified instructions
+  contacts        VerifiedContact[]
+  anomalies       AnomalyReport[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("institution")
+}
+
+model User {
+  id                   String                @id @default(cuid())
+  name                 String
+  email                String                @unique
+  emailVerified        Boolean
+  image                String?
+  role                 String                @default("REPORTER")
+  isKycVerified        Boolean               @default(false)
+  reputationPoints     Int                   @default(0)
+  lastClaimedAt        DateTime?
+  badges               String? // JSON stringified array of badges
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  sessions             Session[]
+  accounts             Account[]
+  incidents            Incident[]            @relation("ReporterIncidents")
+  verifications        Incident[]            @relation("InvestigatorVerifications")
+  anomalyVerifications AnomalyVerification[] @relation("InvestigatorAnomalyVerifications")
+  kycRequest           KycRequest?
+
+  @@index([reputationPoints])
+  @@map("user")
+}
+
+model Incident {
+  id            String  @id @default(cuid())
+  story         String // The reporter's chronology
+  scammerNumber String?
+  spoofedBank   String?
+  status        String  @default("pending")
+  isArchived    Boolean @default(false)
+
+  evidence IncidentEvidence[]
+
+  author   User   @relation("ReporterIncidents", fields: [authorId], references: [id])
+  authorId String
+
+  verifier   User?   @relation("InvestigatorVerifications", fields: [verifierId], references: [id])
+  verifierId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([scammerNumber])
+  @@map("incident")
+}
+
+model IncidentEvidence {
+  id                  String   @id @default(cuid())
+  incidentId          String
+  sanitizedUrl        String
+  originalEvidenceUrl String
+  incident            Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  createdAt           DateTime @default(now())
+
+  @@map("incident_evidence")
+}
+
+model ArchivedIncident {
+  id             String   @id @default(cuid())
+  incidentId     String   @unique
+  encryptedStory String // AES-256 encrypted chronology
+  metadata       String? // Sanitized JSON metadata
+  archivedAt     DateTime @default(now())
+
+  @@map("archived_incident")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model VerifiedContact {
+  id            String       @id @default(cuid())
+  name          String
+  phone         String?
+  whatsapp      String?
+  domain        String?
+  email         String?
+  instagram     String?
+  isOfficial    Boolean      @default(true)
+  signature     String? // Cryptographic signature from Entity
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+  institutionId String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([phone])
+  @@index([whatsapp])
+  @@index([domain])
+  @@map("verified_contact")
+}
+
+model AnomalyReport {
+  id              String                @id @default(cuid())
+  sourceUrl       String
+  detectedNumber  String
+  detectedContext String?
+  severity        String                @default("high")
+  status          String                @default("pending") // pending, verified, ignored
+  consensusCount  Int                   @default(0)
+  institution     Institution?          @relation(fields: [institutionId], references: [id])
+  institutionId   String?
+  verifications   AnomalyVerification[]
+  createdAt       DateTime              @default(now())
+
+  @@index([detectedNumber])
+  @@map("anomaly_report")
+}
+
+model AnomalyVerification {
+  id             String @id @default(cuid())
+  anomalyId      String
+  investigatorId String
+  stakedPoints   Int    @default(10)
+
+  anomaly      AnomalyReport @relation(fields: [anomalyId], references: [id])
+  investigator User          @relation("InvestigatorAnomalyVerifications", fields: [investigatorId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([anomalyId, investigatorId])
+  @@map("anomaly_verification")
+}
+
+model KycRequest {
+  id           String @id @default(cuid())
+  userId       String @unique
+  name         String
+  encryptedNik String
+  selfiePath   String
+  status       String @default("pending") // pending, verified, rejected
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("kyc_request")
+}

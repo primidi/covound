@@ -1,0 +1,47 @@
+[DIRECTOR'S NOTE: ETHICAL BRIEF FOR VIDEO EDITING]
+- The Scammer's Phone Number WILL be visible. Moral justification: Scammers forfeit privacy when committing fraud; exposing the number protects the community (the core value of Voundism).
+- The Spoofed Bank's Name & Logo WILL be censored. Moral justification: The bank is a victim of brand hijacking. Exposing them unfairly damages their reputation for a vulnerability in search algorithms, violating responsible disclosure standards.
+--------------------------------------------------
+
+[0:00 - 0:20] (Duration: 20s) - THE HOOK
+[Tone: Satirical, then shifting to serious/frustrated]
+"I thought the 'lost 19 million' was just a political promise for job vacancies... 
+*(Action: Perform Gibran's vice president debate gesture of satirely seeking here)* 
+...sadly, so do my savings.
+
+*(Pause slightly for impact)* 
+I lost my money to social engineering. Scammers manipulated search algorithms—*(Emphasize)* poisoning SEO and AI Overviews with fake bank hotlines. When my account got blocked and I panicked, I blindly trusted the top search result."
+
+[0:20 - 0:55] (Duration: 35s) - ELABORATION & ANALOGY
+[Tone: Confident, solution-oriented]
+"For this kind of #JuaraVibeCoding opportunity, I built CoVound based on a strict *(Emphasize)* 'Zero-Trust' philosophy. Think of it like Dr. Gia Pratama’s but as a digital solution where you need both preventive care and an IGD (Instalasi Gawat Darurat).
+
+*(Gesture: Hand on one side to indicate the first pillar)* 
+Our preventive care is Voundism, a Chrome extension. It enforces zero-trust by running background syncs against our database to flag unverified numbers directly in your browser based on community consensus. 
+
+*(Gesture: Hand on the other side to indicate the second pillar)* 
+Our digital IGD is CoVounding, a zero-trust web portal where victims report incidents and volunteer investigators triage the data securely."
+
+[0:55 - 1:45] (Duration: 50s) - THE DEMO
+[Tone: Fast-paced, authoritative]
+"Let me show you how this IGD works."
+*(Action: Point or gesture toward the screen)*
+
+[0:55 - 1:10] (Duration: 15s) - SCENE 1: THE TRAP
+*(Action: Open a mocked search result or fake bank page. Show the Voundism Chrome Extension actively flagging a phone number with a red warning badge)*
+"Here is a typical fake search result. Notice how Voundism instantly flags the hotline as 'Unverified' before the user even clicks."
+
+[1:10 - 1:25] (Duration: 15s) - SCENE 2: THE REPORT
+*(Action: Switch to the CoVounding victim portal. Quickly paste the number and submit a report)*
+"If someone falls for it, they immediately go to CoVounding. They paste the number, and our Zero-Trust system logs it."
+
+[1:25 - 1:45] (Duration: 20s) - SCENE 3: THE TRIAGE & QUORUM
+*(Action: Switch to the Investigator dashboard. Show an investigator flagging the number, pushing it to the quorum threshold)*
+"Instantly, volunteer investigators see it in the IGD triage queue. Once enough investigators flag it, it reaches a 'quorum'—a minimum consensus threshold. And finally, our Admin will finalize it—either it is verified or a scam—instantly updating Voundism for everyone else."
+
+[1:45 - 2:00] (Duration: 15s) - THE OUTRO
+[Tone: Sincere, hopeful]
+"My key metric for success? *(Emphasize)* Zero victim reports. I hope nobody ever has to use this IGD. 
+
+It's an early prototype, but you can try it at the link below. Thank you!"
+*(Action: Smile and nod)*

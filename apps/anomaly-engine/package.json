@@ -1,0 +1,25 @@
+{
+  "name": "anomaly-engine",
+  "version": "1.0.0",
+  "description": "CoVound Anomaly Detection Engine",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "hunt": "ts-node src/hunt.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Gharis Primada Hariyono",
+  "license": "ISC",
+  "dependencies": {
+    "@covound/db": "*",
+    "@covound/logic": "*",
+    "@google/generative-ai": "^0.21.0",
+    "dotenv": "^16.4.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "prisma": "latest",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

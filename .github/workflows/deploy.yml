@@ -1,0 +1,75 @@
+name: CoVound Clinical Deployment
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GAR_LOCATION: us-central1
+  REPOSITORY: covound-images
+  DB_BUCKET: covound-db-bucket
+  SERVICE_ACCOUNT: ${{ secrets.GCP_SA_EMAIL }}
+  WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Authorize Docker
+        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      # 🏥 Deploy Covounding (Reporter/Investigator Portal)
+      - name: Build and Push Covounding
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/covounding:${{ github.sha }} -f apps/covounding/Dockerfile .
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/covounding:${{ github.sha }}
+
+      - name: Deploy Covounding to Cloud Run
+        run: |
+          gcloud run deploy covounding \
+            --image ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/covounding:${{ github.sha }} \
+            --region ${{ env.GAR_LOCATION }} \
+            --service-account ${{ env.SERVICE_ACCOUNT }} \
+            --execution-environment gen2 \
+            --add-volume name=gcs,type=cloud-storage,bucket=${{ env.DB_BUCKET }} \
+            --add-volume-mount volume=gcs,mount-path=/mnt/gcs \
+            --set-env-vars "NODE_ENV=production,DATABASE_URL=file:/mnt/gcs/dev.db" \
+            --set-secrets "BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest,VITE_VOUNDISM_SECRET=VITE_VOUNDISM_SECRET:latest" \
+            --allow-unauthenticated
+
+      # 🛡️ Deploy Vounder (Admin Board)
+      - name: Build and Push Vounder
+        run: |
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/vounder:${{ github.sha }} -f apps/vounder/Dockerfile .
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/vounder:${{ github.sha }}
+
+      - name: Deploy Vounder to Cloud Run
+        run: |
+          gcloud run deploy vounder \
+            --image ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/vounder:${{ github.sha }} \
+            --region ${{ env.GAR_LOCATION }} \
+            --service-account ${{ env.SERVICE_ACCOUNT }} \
+            --execution-environment gen2 \
+            --add-volume name=gcs,type=cloud-storage,bucket=${{ env.DB_BUCKET }} \
+            --add-volume-mount volume=gcs,mount-path=/mnt/gcs \
+            --set-env-vars "NODE_ENV=production,DATABASE_URL=file:/mnt/gcs/dev.db" \
+            --set-secrets "BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest" \
+            --allow-unauthenticated

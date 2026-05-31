@@ -1,0 +1,25 @@
+.private-incident/
+node_modules/
+.env*
+dist/
+build/
+*.db
+*.db-journal
+.react-router/
+
+# Local debug and media
+/debug/
+/enhancements/
+
+# Sensitive storage
+/storage/
+
+# Local AI execution state
+docs/ai-workflows/.executed.json
+
+# Confidential Clinical Handoffs
+docs/handoff/
+
+# Prisma generated client
+packages/db/generated/
+

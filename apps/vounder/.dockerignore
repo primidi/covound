@@ -1,0 +1,17 @@
+.react-router
+build
+node_modules
+README.md
+.env*
+*.db
+*.db-journal
+.private-incident
+debug
+storage
+scripts/**
+!scripts/prod-start.sh
+docs
+.git
+.husky
+biome.json
+tsconfig.json
