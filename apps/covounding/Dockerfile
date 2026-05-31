@@ -44,19 +44,13 @@ RUN apk add --no-cache openssl
 
 ENV NODE_ENV=production
 
-# Copy built assets and necessary files
-COPY --from=builder /app/apps/covounding/build ./apps/covounding/build
-COPY --from=builder /app/apps/covounding/package.json ./apps/covounding/
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/package-lock.json ./
-COPY --from=builder /app/packages/db/prisma/schema.prisma ./packages/db/prisma/schema.prisma
-COPY --from=builder /app/scripts/prod-start.sh ./scripts/prod-start.sh
+# FOOLPROOF FIX: Copy the entire working builder directory
+# This guarantees all native binaries (better-sqlite3), generated Prisma clients, 
+# and monorepo workspace symlinks are perfectly intact for production.
+COPY --from=builder /app /app
 
 # Ensure script is executable
 RUN chmod +x ./scripts/prod-start.sh
-
-# Install production dependencies only
-RUN npm ci --omit=dev --ignore-scripts
 
 # Expose port
 EXPOSE 8080
