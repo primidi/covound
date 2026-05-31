@@ -29,8 +29,14 @@ RUN apk add --no-cache openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Set database URL for build-time push
+ENV DATABASE_URL="file:/app/dev.db"
+
 # Generate Prisma Client
 RUN npm run db:generate --workspace=@covound/db
+
+# Bake database into the image
+RUN npx prisma db push --schema=./packages/db/prisma/schema.prisma --accept-data-loss
 
 # Build the application
 RUN npm run build --workspace=covounding
@@ -39,25 +45,17 @@ RUN npm run build --workspace=covounding
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Install openssl for Prisma
-RUN apk add --no-cache openssl
-
 ENV NODE_ENV=production
+ENV DATABASE_URL="file:/app/dev.db"
+ENV HOST=0.0.0.0
+ENV PORT=8080
 
 # FOOLPROOF FIX: Copy the entire working builder directory
-# This guarantees all native binaries (better-sqlite3), generated Prisma clients, 
-# and monorepo workspace symlinks are perfectly intact for production.
+# This guarantees all native binaries, Prisma clients, and database file are present
 COPY --from=builder /app /app
-
-# Ensure script is executable and has correct UNIX line endings
-RUN sed -i 's/\r$//' ./scripts/prod-start.sh && chmod +x ./scripts/prod-start.sh
-
-# Explicitly install the prisma CLI in the runner so the startup script can push the schema
-RUN npm install -g prisma@7.8.0
 
 # Expose port
 EXPOSE 8080
 
-# Start command via script
-ENTRYPOINT ["/bin/sh", "./scripts/prod-start.sh"]
-CMD ["covounding"]
+# Start command directly (no startup script)
+CMD ["npm", "run", "start", "--workspace=covounding"]
