@@ -36,7 +36,7 @@ ENV DATABASE_URL="file:/app/dev.db"
 RUN DATABASE_URL="file:/app/dev.db" npm run db:generate --workspace=@covound/db
 
 # Pre-bake the database
-RUN cp packages/db/prisma/dev.db /app/dev.db
+COPY packages/db/prisma/dev.db /app/dev.db
 
 # Build the application
 RUN npm run build --workspace=vounder

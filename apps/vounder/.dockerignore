@@ -3,9 +3,11 @@ build
 node_modules
 README.md
 .env*
+# Allow specifically the dev database
+!packages/db/prisma/dev.db
+
 *.db
 *.db-journal
-!packages/db/prisma/dev.db
 .private-incident
 debug
 storage
