@@ -5,6 +5,7 @@ README.md
 .env*
 *.db
 *.db-journal
+!packages/db/prisma/dev.db
 .private-incident
 debug
 storage
