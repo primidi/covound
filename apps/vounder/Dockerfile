@@ -52,6 +52,9 @@ COPY --from=builder /app /app
 # Ensure script is executable and has correct UNIX line endings
 RUN sed -i 's/\r$//' ./scripts/prod-start.sh && chmod +x ./scripts/prod-start.sh
 
+# Explicitly install the prisma CLI in the runner so the startup script can push the schema
+RUN npm install -g prisma@7.8.0
+
 # Expose port
 EXPOSE 8080
 
