@@ -23,3 +23,7 @@ docs/handoff/
 # Prisma generated client
 packages/db/generated/
 
+# Sensitive internal scripts and artifacts
+/scripts/
+/apps/covounding/public/artifacts/
+
