@@ -105,3 +105,10 @@
 - **Edge Dependency Fix**: Removed Node C++ native dependency (`sharp`) from serverless edge endpoints.
 - **Automated Actions Pipeline**: Rebuilt `.github/workflows/deploy.yml` to run automated deployments using `cloudflare/wrangler-action`.
 - **Documentation Overhaul**: Compiled the environment setup credentials guide (`CLOUDFLARE_SUPABASE_SETUP.md`), updated ADR records (superseded ADR-0002 with ADR-0005, accepted ADR-0003 & ADR-0004), rewritten GCP and master deployment READMEs, and consolidated dated handoff files.
+
+## Sunday, June 14, 2026
+**Monorepo pnpm Workspaces Migration & CI Wrangler Fix**
+- **pnpm Workspaces Migration**: Migrated the monorepo from `npm` to `pnpm` workspaces for strict package isolation and faster builds. Resolved several phantom dependency issues exposed by pnpm.
+- **Husky Hook Update**: Updated `.husky/pre-commit` to use `pnpm lint-staged` and `pnpm typecheck` instead of deprecated `npm` workspace parameters.
+- **CI Wrangler Deployment Fix**: Declared `wrangler` as a direct devDependency in `covounding` and `vounder` apps, and configured `packageManager: pnpm` in `deploy.yml` to prevent auth-less fallback package installations during GitHub Actions deployments.
+
