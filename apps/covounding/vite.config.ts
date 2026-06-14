@@ -38,15 +38,15 @@ function extensionApiBypass(): Plugin {
 
 export default defineConfig({
   plugins: [
+    cloudflare({
+      viteEnvironment: { name: "ssr" },
+    }),
     extensionApiBypass(),
     tsconfigPaths(),
     tailwindcss(),
     reactRouter(),
-    cloudflare(),
   ],
   ssr: {
-    // Native modules should be externalized in SSR
-    external: ["better-sqlite3"],
-    noExternal: ["@covound/db", "@covound/ui"],
+    noExternal: true,
   },
 });
