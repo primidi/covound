@@ -13,5 +13,8 @@
       "binding": "VERIFIED_CONTACTS",
       "id": "9bb272114f6b4350b559afd9cc6abbbb"
     }
-  ]
+  ],
+  "observability": {
+    "enabled": true
+  }
 }
