@@ -2,6 +2,7 @@ import { UserRole } from "@covound/db/types";
 import {
   decryptData,
   EntitySchema,
+  normalizePhone,
   OfficialContactPointSchema,
 } from "@covound/logic";
 import { Badge } from "@covound/ui/components/ui/badge";
@@ -41,15 +42,104 @@ import {
 } from "react-router";
 import { prisma } from "~/db.server";
 import { auth } from "~/lib/auth.server";
+import { getLanguage } from "~/lib/language.server";
 
 export const meta: MetaFunction = () => [
-  { title: "CoVound | Admin Dashboard" },
+  { title: "CoVound | Vounder" },
 ];
 
+const translations = {
+  en: {
+    title: "Vounder Dashboard",
+    desc: "Manage the verified contact registry and track security anomalies.",
+    kycTitle: "Identity Verification Queue",
+    kycDesc: "Pending investigator applications requiring manual clinical review",
+    applicant: "Applicant",
+    nik: "NIK",
+    actions: "Actions",
+    verify: "Verify Identity",
+    reject: "Reject",
+    threatTitle: "Threat Detection",
+    threatDesc: "Recent anomalies flagged by the Anomaly Engine",
+    bank: "Bank",
+    detectedNumber: "Detected Number",
+    quorum: "Quorum",
+    action: "Action",
+    approved: "Approved",
+    approveLegit: "Approve Legit",
+    blacklisted: "Blacklisted",
+    promoted: "Promoted",
+    promote: "Promote",
+    noThreats: "No threats detected. Registry is safe.",
+    verifiedTitle: "Verified Registry",
+    verifiedDesc: "The cryptographically verified source of truth",
+    nameLabel: "NAME",
+    whatsappLabel: "WHATSAPP",
+    domainLabel: "DOMAIN",
+    institutionLabel: "INSTITUTION",
+    placeholderName: "Official Contact Name",
+    placeholderPhone: "+62...",
+    placeholderDomain: "domain.com",
+    selectInst: "(Select Institution)",
+    verifyBtn: "Verify Credential",
+    colInst: "INSTITUTION",
+    colEntity: "VERIFIED ENTITY",
+    colCred: "CREDENTIAL",
+    colMgmt: "MANAGEMENT",
+    newEntityTitle: "Register New Entity",
+    newEntityDesc: "Add a new trusted institution to the clinical registry",
+    entityNamePlaceholder: "e.g., Bank Jago",
+    registerBtn: "Register Entity",
+  },
+  id: {
+    title: "Dashboard Vounder",
+    desc: "Kelola registri kontak terverifikasi dan lacak anomali keamanan.",
+    kycTitle: "Antrean Verifikasi Identitas",
+    kycDesc: "Aplikasi investigator tertunda yang memerlukan tinjauan klinis manual",
+    applicant: "Pemohon",
+    nik: "NIK",
+    actions: "Tindakan",
+    verify: "Verifikasi Identitas",
+    reject: "Tolak",
+    threatTitle: "Deteksi Ancaman",
+    threatDesc: "Anomali terbaru yang ditandai oleh Anomaly Engine",
+    bank: "Bank",
+    detectedNumber: "Nomor Terdeteksi",
+    quorum: "Kuorum",
+    action: "Tindakan",
+    approved: "Disetujui",
+    approveLegit: "Setujui Sah",
+    blacklisted: "Daftar Hitam",
+    promoted: "Dipromosikan",
+    promote: "Promosikan",
+    noThreats: "Tidak ada ancaman terdeteksi. Registri aman.",
+    verifiedTitle: "Registri Terverifikasi",
+    verifiedDesc: "Sumber kebenaran yang ditandatangani secara kriptografi",
+    nameLabel: "NAMA",
+    whatsappLabel: "WHATSAPP",
+    domainLabel: "DOMAIN",
+    institutionLabel: "INSTITUSI",
+    placeholderName: "Nama Kontak Resmi",
+    placeholderPhone: "+62...",
+    placeholderDomain: "domain.com",
+    selectInst: "(Pilih Institusi)",
+    verifyBtn: "Verifikasi Kredensial",
+    colInst: "INSTITUSI",
+    colEntity: "ENTITAS TERVERIFIKASI",
+    colCred: "KREDENSIAL",
+    colMgmt: "PENGELOLAAN",
+    newEntityTitle: "Daftarkan Entitas Baru",
+    newEntityDesc: "Tambahkan institusi terpercaya baru ke registri klinis",
+    entityNamePlaceholder: "misal, Bank Jago",
+    registerBtn: "Daftarkan Entitas",
+  },
+};
+
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
+  const [session, lang] = await Promise.all([
+    auth.api.getSession({ headers: request.headers }),
+    getLanguage(request),
+  ]);
 
   if (!session) {
     return redirect("/login");
@@ -90,7 +180,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         : "ENCRYPTION_KEY_MISSING",
   }));
 
-  return { institutions, contacts, anomalies, pendingKyc, user: session.user };
+  return { institutions, contacts, anomalies, pendingKyc, user: session.user, lang };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -185,8 +275,8 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (intent === "add_contact") {
-    const phone = formData.get("phone") as string;
-    const whatsapp = formData.get("whatsapp") as string;
+    const phone = normalizePhone(formData.get("phone") as string);
+    const whatsapp = normalizePhone(formData.get("whatsapp") as string);
     const domain = formData.get("domain") as string;
 
     // Map to shared schema
@@ -270,18 +360,19 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AdminDashboard() {
-  const { institutions, contacts, anomalies, pendingKyc } =
+  const { institutions, contacts, anomalies, pendingKyc, lang } =
     useLoaderData<typeof loader>();
+  const t = translations[lang as "en" | "id"] || translations.id;
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Vounder Dashboard
+            {t.title}
           </h1>
           <p className="text-slate-500 font-medium">
-            Manage the verified contact registry and track security anomalies.
+            {t.desc}
           </p>
         </header>
 
@@ -289,20 +380,19 @@ export default function AdminDashboard() {
           <Card className="border-amber-100 shadow-amber-900/5 mb-8">
             <CardHeader className="bg-amber-50/30">
               <CardTitle className="text-amber-900">
-                Identity Verification Queue
+                {t.kycTitle}
               </CardTitle>
               <CardDescription className="text-amber-700/70 font-medium">
-                Pending investigator applications requiring manual clinical
-                review
+                {t.kycDesc}
               </CardDescription>
             </CardHeader>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Applicant Name</TableHead>
-                  <TableHead>Decrypted NIK</TableHead>
+                  <TableHead>{t.applicant}</TableHead>
+                  <TableHead>{t.nik}</TableHead>
                   <TableHead>Evidence</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead className="text-right">{t.action}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -350,7 +440,7 @@ export default function AdminDashboard() {
                           variant="destructive"
                           className="h-7 text-[10px]"
                         >
-                          Reject
+                          {t.reject}
                         </Button>
                       </Form>
                       <Form method="post" className="inline-block">
@@ -365,7 +455,7 @@ export default function AdminDashboard() {
                           size="sm"
                           className="h-7 text-[10px] bg-emerald-600 hover:bg-emerald-700"
                         >
-                          Approve
+                          {t.verify}
                         </Button>
                       </Form>
                     </TableCell>
@@ -379,22 +469,22 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="md:col-span-1 h-fit">
             <CardHeader>
-              <CardTitle>Institutions</CardTitle>
-              <CardDescription>Official banking entities</CardDescription>
+              <CardTitle>{t.newEntityTitle}</CardTitle>
+              <CardDescription>{t.newEntityDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               <Form method="post" className="space-y-4 mb-6">
                 <input type="hidden" name="intent" value="add_institution" />
                 <div className="space-y-1">
-                  <Label>Institution Name</Label>
-                  <Input name="name" placeholder="e.g. Bank Jago" required />
+                  <Label>{t.colInst}</Label>
+                  <Input name="name" placeholder={t.entityNamePlaceholder} required />
                 </div>
                 <div className="space-y-1">
                   <Label>Hotline</Label>
                   <Input name="hotline" placeholder="1500..." />
                 </div>
                 <Button type="submit" className="w-full" variant="secondary">
-                  Register Bank
+                  {t.registerBtn}
                 </Button>
               </Form>
 
@@ -433,19 +523,19 @@ export default function AdminDashboard() {
             <CardHeader className="border-b bg-red-50/20">
               <CardTitle className="text-red-800 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                Threat Detection
+                {t.threatTitle}
               </CardTitle>
               <CardDescription className="text-red-600/80 font-medium text-xs">
-                Recent anomalies flagged by the Anomaly Engine
+                {t.threatDesc}
               </CardDescription>
             </CardHeader>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Bank</TableHead>
-                  <TableHead>Detected Number</TableHead>
-                  <TableHead>Quorum</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead>{t.bank}</TableHead>
+                  <TableHead>{t.detectedNumber}</TableHead>
+                  <TableHead>{t.quorum}</TableHead>
+                  <TableHead className="text-right">{t.action}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -535,7 +625,7 @@ export default function AdminDashboard() {
                       colSpan={4}
                       className="text-center py-12 text-slate-400 italic"
                     >
-                      No threats detected. Registry is safe.
+                      {t.noThreats}
                     </TableCell>
                   </TableRow>
                 )}
@@ -547,10 +637,10 @@ export default function AdminDashboard() {
         <Card className="border-emerald-100 shadow-emerald-900/5">
           <CardHeader className="bg-emerald-50/30">
             <CardTitle className="text-emerald-900">
-              Verified Registry
+              {t.verifiedTitle}
             </CardTitle>
             <CardDescription className="text-emerald-700/70 font-medium">
-              The cryptographically verified source of truth
+              {t.verifiedDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -560,40 +650,39 @@ export default function AdminDashboard() {
             >
               <input type="hidden" name="intent" value="add_contact" />
               <div className="space-y-2">
-                <Label className="text-emerald-800 font-bold">NAME</Label>
+                <Label className="text-emerald-800 font-bold">{t.nameLabel}</Label>
                 <Input
                   name="name"
-                  placeholder="Official Contact Name"
+                  placeholder={t.placeholderName}
                   required
                   className="border-emerald-200 focus-visible:ring-emerald-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-emerald-800 font-bold">WHATSAPP</Label>
+                <Label className="text-emerald-800 font-bold">{t.whatsappLabel}</Label>
                 <Input
                   name="whatsapp"
-                  placeholder="+62..."
+                  placeholder={t.placeholderPhone}
                   className="border-emerald-200 focus-visible:ring-emerald-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-emerald-800 font-bold">DOMAIN</Label>
+                <Label className="text-emerald-800 font-bold">{t.domainLabel}</Label>
                 <Input
                   name="domain"
-                  placeholder="domain.com"
+                  placeholder={t.placeholderDomain}
                   className="border-emerald-200 focus-visible:ring-emerald-500"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-emerald-800 font-bold">
-                  INSTITUTION
+                  {t.institutionLabel}
                 </Label>
                 <select
                   name="institutionId"
                   className="flex h-9 w-full rounded-md border-2 border-emerald-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
                 >
-                  <option value="">(Select Institution)</option>
-                  {institutions.map((i: any) => (
+                  <option value="">{t.selectInst}</option>                  {institutions.map((i: any) => (
                     <option key={i.id} value={i.id}>
                       {i.name}
                     </option>
@@ -604,7 +693,7 @@ export default function AdminDashboard() {
                 type="submit"
                 className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20"
               >
-                Verify Credential
+                {t.verifyBtn}
               </Button>
             </Form>
 
@@ -612,16 +701,16 @@ export default function AdminDashboard() {
               <TableHeader>
                 <TableRow className="border-emerald-100">
                   <TableHead className="text-emerald-900 font-bold">
-                    INSTITUTION
+                    {t.colInst}
                   </TableHead>
                   <TableHead className="text-emerald-900 font-bold">
-                    VERIFIED ENTITY
+                    {t.colEntity}
                   </TableHead>
                   <TableHead className="text-emerald-900 font-bold">
-                    CREDENTIAL
+                    {t.colCred}
                   </TableHead>
                   <TableHead className="text-right text-emerald-900 font-bold">
-                    MANAGEMENT
+                    {t.colMgmt}
                   </TableHead>
                 </TableRow>
               </TableHeader>

@@ -1,7 +1,9 @@
-﻿# ADR 0003: Keyless CI/CD via Workload Identity Federation
+# ADR 0003: Keyless CI/CD via Workload Identity Federation
 
 ## Status
-Proposed
+Accepted
+
+*Note: Following the Cloudflare and Supabase migration on 2026-06-13, GCP Workload Identity Federation is no longer active in primary deployment pipelines, superseded by Cloudflare API Token authentication. However, the decision remains historically accepted for the original GCP workspace scope.*
 
 ## Date
 2026-05-30

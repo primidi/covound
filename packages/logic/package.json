@@ -9,10 +9,14 @@
     "./crypto": "./src/crypto.ts",
     "./persona": "./src/persona.ts"
   },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/node": "^25.9.1",
     "typescript": "^6.0.3"
   }
 }

@@ -1,4 +1,5 @@
-import { AnomalySchema, getDiagnosis } from "@covound/logic";
+import { UserRole } from "@covound/db/types";
+import { AnomalySchema, getDiagnosis, normalizePhone } from "@covound/logic";
 import { Badge } from "@covound/ui/components/ui/badge";
 import { Button } from "@covound/ui/components/ui/button";
 import {
@@ -45,6 +46,7 @@ import {
   useNavigation,
 } from "react-router";
 import { KYCModal } from "~/components/KYCModal";
+import { EvidenceCanvas } from "~/components/EvidenceCanvas";
 import { prisma } from "~/db.server";
 import { authClient } from "~/lib/auth.client";
 import { auth } from "~/lib/auth.server";
@@ -77,6 +79,9 @@ const translations = {
       "Privacy Protocol: Please annotate, blur, or censor sensitive data (faces, private names) using your local device editor or tools like Excalidraw BEFORE uploading evidence.",
     dischargeBtn: "Discharge & Return Home",
     confirmedDiagnosis: "Confirmed Clinical Diagnosis",
+    downloadFirewall: "Download Firewall",
+    postSubmissionPrompt:
+      "Protect yourself from future Threat Vectors. Install Voundism.",
   },
   id: {
     title: "Ruang Triase",
@@ -103,6 +108,9 @@ const translations = {
       "Protokol Privasi: Mohon beri anotasi, sensor, atau samarkan data sensitif (wajah, nama pribadi) menggunakan editor perangkat lokal atau alat seperti Excalidraw SEBELUM mengunggah bukti.",
     dischargeBtn: "Selesai & Kembali ke Beranda",
     confirmedDiagnosis: "Diagnosis Klinis Terkonfirmasi",
+    downloadFirewall: "Unduh Firewall",
+    postSubmissionPrompt:
+      "Lindungi diri Anda dari Vektor Ancaman di masa mendatang. Pasang Voundism.",
   },
 };
 
@@ -129,13 +137,20 @@ const step4Translations = {
 
 import type { MetaFunction } from "react-router";
 
-export const meta: MetaFunction = () => [{ title: "CoVound | Report Anomaly" }];
+export const meta: MetaFunction = () => [{ title: "CoVound | Report" }];
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const [session, lang] = await Promise.all([
     auth.api.getSession({ headers: request.headers }),
     getLanguage(request),
   ]);
+
+  if (session) {
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (user?.role !== UserRole.REPORTER) {
+      throw new Response("Forbidden: Reporter Access Only", { status: 403 });
+    }
+  }
 
   let incidents: any[] = [];
   if (session) {
@@ -159,7 +174,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
 
     const rawData = {
-      value: formData.get("detected_number") as string,
+      value: normalizePhone(formData.get("detected_number") as string),
       type: "whatsapp" as const,
       sourceUrl: "Reporter Portal",
       status: "isolated" as const,
@@ -214,6 +229,12 @@ export default function TriageRoom() {
   const [step, setStep] = useState(1);
   const [story, setStory] = useState("");
   const [extractedNumbers, setExtractedNumbers] = useState<string[]>([]);
+  
+  // Multi-file state
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const [redactedBlobs, setRedactedBlobs] = useState<Blob[]>([]);
+
   const [aiResult, setAiResult] = useState<{
     scammerNumber?: string;
     entityName?: string;
@@ -302,7 +323,7 @@ export default function TriageRoom() {
             asChild
             className="mt-8 w-full h-14 text-lg font-bold rounded-xl bg-slate-900 hover:bg-slate-800 text-white"
           >
-            <Link to="/login">Login or Sign Up</Link>
+            <Link to="/login?role=REPORTER">Login or Sign Up</Link>
           </Button>
         </Card>
       </div>
@@ -319,15 +340,36 @@ export default function TriageRoom() {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
+      setStagedFiles(Array.from(files));
+      setCurrentFileIndex(0);
+      setRedactedBlobs([]);
+    }
+  };
+
+  const handleCanvasConfirm = (boxes: any[], sanitizedBlob: Blob) => {
+    const newRedactedBlobs = [...redactedBlobs, sanitizedBlob];
+    setRedactedBlobs(newRedactedBlobs);
+
+    if (currentFileIndex < stagedFiles.length - 1) {
+      setCurrentFileIndex(currentFileIndex + 1);
+    } else {
+      // Final submission of all files
       const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append("evidence", files[i]);
-      }
+      newRedactedBlobs.forEach((blob, i) => {
+        const sanitizedFile = new File([blob], stagedFiles[i].name, {
+          type: "image/png",
+        });
+        formData.append("evidence", sanitizedFile);
+      });
+
       fetcher.submit(formData, {
         method: "post",
         action: "/api/analyze-screenshot",
         encType: "multipart/form-data",
       });
+
+      setStagedFiles([]);
+      setCurrentFileIndex(0);
     }
   };
 
@@ -367,6 +409,18 @@ export default function TriageRoom() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="hidden lg:flex items-center gap-2 font-bold border-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all"
+            >
+              <Link to="https://chrome.google.com/webstore/detail/voundism-placeholder">
+                <Shield className="h-4 w-4" />
+                {t.downloadFirewall}
+              </Link>
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -626,7 +680,7 @@ export default function TriageRoom() {
                           {t.evidenceLabel}
                         </Label>
 
-                        {!aiResult && (
+                        {!aiResult && stagedFiles.length === 0 && (
                           <div className="space-y-6">
                             <div className="p-6 bg-amber-50 border-2 border-amber-200 rounded-3xl flex items-start gap-4">
                               <ShieldAlert className="h-8 w-8 text-amber-600 shrink-0 mt-1" />
@@ -658,6 +712,31 @@ export default function TriageRoom() {
                                 className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                               />
                             </div>
+                          </div>
+                        )}
+
+                        {!aiResult && stagedFiles.length > 0 && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between px-2">
+                              <Badge variant="outline" className="font-black text-[10px] uppercase tracking-widest bg-white">
+                                Editing Artifact {currentFileIndex + 1} of {stagedFiles.length}
+                              </Badge>
+                              <div className="flex gap-1">
+                                {stagedFiles.map((_, i) => (
+                                  <div key={i} className={`h-1 w-4 rounded-full ${i <= currentFileIndex ? "bg-indigo-500" : "bg-slate-200"}`} />
+                                ))}
+                              </div>
+                            </div>
+                            <EvidenceCanvas
+                              key={stagedFiles[currentFileIndex].name + currentFileIndex}
+                              file={stagedFiles[currentFileIndex]}
+                              onConfirm={handleCanvasConfirm}
+                              onCancel={() => {
+                                setStagedFiles([]);
+                                setRedactedBlobs([]);
+                                setCurrentFileIndex(0);
+                              }}
+                            />
                           </div>
                         )}
 
@@ -817,9 +896,21 @@ export default function TriageRoom() {
                         </p>
                       </div>
                       <hr className="border-slate-200" />
-                      <p className="text-sm font-medium text-slate-600 leading-relaxed italic">
-                        {t4.empathyMsg}
-                      </p>
+                      <div className="space-y-4">
+                        <p className="text-sm font-medium text-slate-600 leading-relaxed italic">
+                          "{t.postSubmissionPrompt}"
+                        </p>
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="w-full border-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl h-12"
+                        >
+                          <Link to="https://chrome.google.com/webstore/detail/voundism-placeholder">
+                            <Shield className="h-4 w-4 mr-2" />
+                            {t.downloadFirewall}
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="space-y-4">

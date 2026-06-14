@@ -13,12 +13,17 @@ import {
   DropdownMenuTrigger,
 } from "@covound/ui/components/ui/dropdown-menu";
 import {
+  Activity,
+  AlertCircle,
   ArrowRight,
   ChevronDown,
+  Globe,
   HeartPulse,
   LogOut,
   Search,
   Shield,
+  ShieldAlert,
+  Users,
 } from "lucide-react";
 import type { MetaFunction } from "react-router";
 import {
@@ -32,51 +37,68 @@ import { prisma } from "~/db.server";
 import { authClient } from "~/lib/auth.client";
 import { auth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
+import { HERO_COPY } from "@covound/logic";
 
-export const meta: MetaFunction = () => [{ title: "CoVound | Home" }];
+export const meta: MetaFunction = () => [{ title: "CoVound | Covounding" }];
 
 const translations = {
   en: {
     title: "CoVounding",
-    heroTitle: "Turn Your Trauma Into Their Takedown.",
-    heroSub:
-      "The AI-Assisted Threat Bounty Board and Digital Triage Center. We crowdsource social engineering incidents to protect the community.",
-    reportBtn: "Report an Incident",
-    huntBtn: "Hunt Threats & Earn Bounties",
-    triageTitle: "Digital Triage Center",
+    heroTitle: HERO_COPY.title.en,
+    heroSub: HERO_COPY.subtitle.en,
+    sanitizeBtn: "Sanitize My Browser",
+    sanitizeTooltip: "Installs Voundism to automatically redact fake numbers.",
+    enterErBtn: "Enter Digital ER",
+    enterErTooltip: "Already attacked? Report an anomaly for triage.",
+    becomeInvestigatorBtn: "Become an Investigator",
+    becomeInvestigatorTooltip: "Verify reports and earn reputation.",
+    triageTitle: "Emergency Triage",
     triageDesc:
-      "Just like an ER, we diagnose scams, extract the 'virus' (the scammer's details), and isolate it globally.",
-    bountyTitle: "Threat Bounty Board",
-    bountyDesc:
-      "Investigators verify reporter reports using Gemini AI to immunize the registry and earn reputation points.",
-    reporterPath: "Are you a reporter?",
-    reporterDesc: "Triage your case and contribute to the Source of Truth.",
-    investigatorPath: "Are you an investigator?",
-    investigatorDesc: "Verify pending threats and protect millions of users.",
-    tagline: "Hopefully, the loss stops with me.",
+      "For those already targeted. We perform AI surgery on evidence to extract and isolate threat vectors globally.",
+    preventionTitle: "Preventive Firewall",
+    preventionDesc:
+      "Voundism sanitizes your search results in real-time, redacting unverified contacts before you can click them.",
+    investigationTitle: "Community Board",
+    investigationDesc:
+      "Verified experts reach consensus on pending anomalies, immunizing the entire ecosystem against new variants.",
+    reporterPath: "In an Emergency?",
+    reporterDesc: "Our Digital ER is ready to triage your incident immediately.",
+    investigatorPath: "Want to protect others?",
+    investigatorDesc: "Join the board of investigators and verify the truth.",
+    tagline: "Accuracy is our only currency. The immunization is complete.",
     langLabel: "English",
+    liveCounterNeutralized: "Threats Immunized",
+    liveCounterProtected: "Connections Protected",
+    downloadFirewall: "Download Firewall",
   },
   id: {
     title: "CoVounding",
-    heroTitle: "Ubah Kepanikan Menjadi Keadilan.",
-    heroSub:
-      "Pusat Triase Digital dan Papan Bounty Ancaman Berbasis AI. Kami mengumpulkan insiden rekayasa sosial untuk melindungi komunitas.",
-    reportBtn: "Laporkan Insiden",
-    huntBtn: "Berburu Ancaman & Raih Bounty",
-    triageTitle: "Pusat Triase Digital",
+    heroTitle: HERO_COPY.title.id,
+    heroSub: HERO_COPY.subtitle.id,
+    sanitizeBtn: "Sanitasi Browser Saya",
+    sanitizeTooltip: "Pasang Voundism untuk menyamarkan nomor palsu secara otomatis.",
+    enterErBtn: "Masuk UGD Digital",
+    enterErTooltip: "Sudah terserang? Laporkan anomali untuk triase.",
+    becomeInvestigatorBtn: "Jadi Investigator",
+    becomeInvestigatorTooltip: "Verifikasi laporan dan raih reputasi.",
+    triageTitle: "Triase Gawat Darurat",
     triageDesc:
-      "Sama seperti UGD, kami mendiagnosis penipuan, mengekstrak 'virus' (detail penipu), dan mengisolasinya secara global.",
-    bountyTitle: "Papan Bounty Ancaman",
-    bountyDesc:
-      "Investigator memverifikasi laporan pelapor menggunakan AI Gemini untuk mengimunisasi registri dan meraih poin reputasi.",
-    reporterPath: "Apakah Anda pelapor?",
-    reporterDesc:
-      "Lakukan triase kasus Anda dan berkontribusi pada Sumber Kebenaran.",
-    investigatorPath: "Apakah Anda investigator?",
-    investigatorDesc:
-      "Verifikasi ancaman yang tertunda dan lindungi jutaan pengguna.",
-    tagline: "Semoga kerugian ini berhenti di saya.",
+      "Bagi mereka yang sudah menjadi target. Kami melakukan bedah AI pada bukti untuk mengekstrak dan mengisolasi vektor ancaman.",
+    preventionTitle: "Firewall Pencegahan",
+    preventionDesc:
+      "Voundism menyanitasi hasil pencarian Anda secara real-time, menyamarkan kontak tak terverifikasi sebelum Anda mengkliknya.",
+    investigationTitle: "Dewan Komunitas",
+    investigationDesc:
+      "Pakar terverifikasi mencapai konsensus pada anomali tertunda, mengimunisasi seluruh ekosistem dari varian baru.",
+    reporterPath: "Dalam Keadaan Darurat?",
+    reporterDesc: "UGD Digital kami siap melakukan triase insiden Anda segera.",
+    investigatorPath: "Ingin melindungi sesama?",
+    investigatorDesc: "Bergabunglah dengan dewan investigator dan verifikasi kebenaran.",
+    tagline: "Akurasi adalah satu-satunya mata uang kami. Imunisasi telah selesai.",
     langLabel: "Bahasa Indonesia",
+    liveCounterNeutralized: "Ancaman Diimunisasi",
+    liveCounterProtected: "Koneksi Terlindungi",
+    downloadFirewall: "Unduh Firewall",
   },
 };
 
@@ -108,7 +130,7 @@ export default function LandingPage() {
   const _navigate = useNavigate();
   const t = translations[lang as "en" | "id"];
 
-  const _setLang = (newLang: string) => {
+  const setLang = (newLang: string) => {
     fetcher.submit(
       { lang: newLang, redirectTo: "/" },
       { method: "post", action: "/api/lang" },
@@ -141,8 +163,18 @@ export default function LandingPage() {
           </Link>
 
           <div className="flex items-center gap-3">
-            {/* Language Selection Hidden for Demo */}
-            {/* 
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="hidden lg:flex items-center gap-2 font-bold border-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all"
+            >
+              <Link to="https://chrome.google.com/webstore/detail/voundism-placeholder">
+                <Shield className="h-4 w-4" />
+                {t.downloadFirewall}
+              </Link>
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -176,7 +208,6 @@ export default function LandingPage() {
             </DropdownMenu>
 
             <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
-            */}
 
             {session ? (
               <DropdownMenu>
@@ -267,31 +298,87 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-            <Link to="/report" className="w-full sm:w-auto group">
+            <Link to="https://chrome.google.com/webstore/detail/voundism-placeholder" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto px-10 py-8 text-xl font-black bg-slate-900 hover:bg-slate-800 shadow-2xl shadow-slate-900/20 rounded-2xl transition-all hover:-translate-y-1 active:scale-95 text-white"
+                title={t.sanitizeTooltip}
+                className="w-full sm:w-auto px-10 py-8 text-xl font-black bg-emerald-600 hover:bg-emerald-700 shadow-2xl shadow-emerald-900/20 rounded-2xl transition-all hover:-translate-y-1 active:scale-95 text-white flex items-center gap-2"
               >
-                {t.reportBtn}
+                <Shield className="h-6 w-6" />
+                {t.sanitizeBtn}
+              </Button>
+            </Link>
+            <Link to="/report" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                title={t.enterErTooltip}
+                className="w-full sm:w-auto px-10 py-8 text-xl font-black border-2 border-amber-200 text-amber-700 hover:bg-amber-50 rounded-2xl transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-2"
+              >
+                <AlertCircle className="h-6 w-6" />
+                {t.enterErBtn}
               </Button>
             </Link>
             <Link to="/investigate" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                variant="outline"
-                className="w-full sm:w-auto px-10 py-8 text-xl font-black border-2 border-slate-200 hover:border-slate-900 rounded-2xl transition-all hover:-translate-y-1 active:scale-95"
+                variant="ghost"
+                title={t.becomeInvestigatorTooltip}
+                className="w-full sm:w-auto px-10 py-8 text-lg font-bold text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-2xl transition-all flex items-center gap-2"
               >
-                {t.huntBtn}
+                <Users className="h-6 w-6" />
+                {t.becomeInvestigatorBtn}
               </Button>
             </Link>
+          </div>
+
+          {/* Live Counter Placeholder */}
+          <div className="pt-12 flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-60 hover:opacity-100 transition-opacity duration-500">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                <Activity className="h-5 w-5 animate-pulse" />
+                <span className="text-3xl font-black tabular-nums tracking-tighter">
+                  1,482
+                </span>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                {t.liveCounterNeutralized}
+              </span>
+            </div>
+            <div className="h-10 w-px bg-slate-200 hidden sm:block" />
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2 text-slate-900 mb-1">
+                <ShieldAlert className="h-5 w-5" />
+                <span className="text-3xl font-black tabular-nums tracking-tighter">
+                  42,091
+                </span>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                {t.liveCounterProtected}
+              </span>
+            </div>
           </div>
         </section>
 
         {/* Metaphor Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
           <Card className="border-2 border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-emerald-900/5 hover:border-emerald-200 transition-all duration-500 group bg-white rounded-3xl overflow-hidden">
             <CardHeader className="p-10 pb-4">
               <div className="h-16 w-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                <Shield className="h-8 w-8" />
+              </div>
+              <CardTitle className="text-3xl font-black tracking-tight">
+                {t.preventionTitle}
+              </CardTitle>
+              <CardDescription className="text-xl text-slate-600 font-medium leading-relaxed pt-3">
+                {t.preventionDesc}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="border-2 border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-amber-900/5 hover:border-amber-200 transition-all duration-500 group bg-white rounded-3xl overflow-hidden">
+            <CardHeader className="p-10 pb-4">
+              <div className="h-16 w-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
                 <HeartPulse className="h-8 w-8" />
               </div>
               <CardTitle className="text-3xl font-black tracking-tight">
@@ -306,13 +393,13 @@ export default function LandingPage() {
           <Card className="border-2 border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-indigo-900/5 hover:border-indigo-200 transition-all duration-500 group bg-white rounded-3xl overflow-hidden">
             <CardHeader className="p-10 pb-4">
               <div className="h-16 w-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
-                <Search className="h-8 w-8" />
+                <Users className="h-8 w-8" />
               </div>
               <CardTitle className="text-3xl font-black tracking-tight">
-                {t.bountyTitle}
+                {t.investigationTitle}
               </CardTitle>
               <CardDescription className="text-xl text-slate-600 font-medium leading-relaxed pt-3">
-                {t.bountyDesc}
+                {t.investigationDesc}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -320,9 +407,9 @@ export default function LandingPage() {
 
         {/* Call to Action Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-stretch bg-white rounded-4xl border-2 border-slate-100 overflow-hidden shadow-2xl shadow-slate-200/50">
-          <div className="p-10 md:p-20 space-y-8 hover:bg-emerald-50/30 transition-colors group">
-            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none font-bold uppercase tracking-widest px-3 py-1">
-              Reporter
+          <div className="p-10 md:p-20 space-y-8 hover:bg-amber-50/30 transition-colors group">
+            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none font-bold uppercase tracking-widest px-3 py-1">
+              Emergency
             </Badge>
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">
               {t.reporterPath}
@@ -333,10 +420,10 @@ export default function LandingPage() {
             <Link to="/report" className="inline-block outline-none">
               <Button
                 variant="link"
-                className="p-0 h-auto text-emerald-600 font-black text-2xl no-underline group-hover:translate-x-2 transition-transform duration-300"
+                className="p-0 h-auto text-amber-600 font-black text-2xl no-underline group-hover:translate-x-2 transition-transform duration-300"
               >
                 <span className="flex items-center gap-2 whitespace-nowrap">
-                  {t.reportBtn} <ArrowRight className="h-6 w-6" />
+                  {t.enterErBtn} <ArrowRight className="h-6 w-6" />
                 </span>
               </Button>
             </Link>
@@ -357,7 +444,7 @@ export default function LandingPage() {
                 className="p-0 h-auto text-indigo-600 font-black text-2xl no-underline group-hover:translate-x-2 transition-transform duration-300"
               >
                 <span className="flex items-center gap-2 whitespace-nowrap">
-                  {t.huntBtn} <ArrowRight className="h-6 w-6" />
+                  {t.becomeInvestigatorBtn} <ArrowRight className="h-6 w-6" />
                 </span>
               </Button>
             </Link>

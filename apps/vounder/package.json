@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "react-router dev --port 5174",
+    "dev": "react-router dev --port 5174 --force",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "bootstrap": "tsx app/lib/bootstrap.ts"
@@ -15,6 +15,7 @@
     "@covound/ui": "*",
     "@fontsource-variable/geist": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
+    "@react-router/cloudflare": "^7.15.0",
     "@react-router/node": "7.15.0",
     "@react-router/serve": "7.15.0",
     "better-auth": "^1.6.10",
@@ -27,6 +28,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.40.2",
     "@react-router/dev": "7.15.0",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^22",

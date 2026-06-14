@@ -6,14 +6,19 @@
 const COVOUND_API_URL =
   (import.meta as any).env?.VITE_COVOUND_API_URL || "http://localhost:5173";
 
-const VOUNDISM_SECRET = import.meta.env.VITE_VOUNDISM_SECRET;
+const VOUNDISM_SECRET = (import.meta as any).env.VITE_VOUNDISM_SECRET;
 
 const SNAPSHOT_API = `${COVOUND_API_URL}/api/snapshot`;
 const REPORT_API = `${COVOUND_API_URL}/api/report-anomaly`;
 const REPORT_LEGIT_API = `${COVOUND_API_URL}/api/report-legit`;
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  console.log("Voundism: Background received message:", message.type);
+chrome.runtime.onMessage.addListener(
+  (
+    message: any,
+    _sender: chrome.runtime.MessageSender,
+    sendResponse: (response?: any) => void,
+  ) => {
+    console.log("Voundism: Background received message:", message.type);
 
   if (message.type === "FETCH_REGISTRY") {
     fetch(SNAPSHOT_API)

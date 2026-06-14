@@ -1,6 +1,35 @@
 import { CheckCircle2, Loader2, ShieldAlert, XCircle } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const translations = {
+  en: {
+    title: "Voundism: CoVound - Quick Triage",
+    question: "Is <strong>{number}</strong> claiming to be an official contact for <strong>{entity}</strong>?",
+    reportScam: "Report Scam",
+    reporting: "Reporting...",
+    isLegit: "It Is Legit",
+    submitting: "Submitting...",
+    successTitle: "Submission Successful",
+    successMsg: "Thank you for helping immunize the community.",
+    failedTitle: "Submission Failed",
+    tryAgain: "Try again",
+    quote: "Every report immunizes the whole community.",
+  },
+  id: {
+    title: "Voundism: CoVound - Triase Cepat",
+    question: "Apakah <strong>{number}</strong> mengaku sebagai kontak resmi untuk <strong>{entity}</strong>?",
+    reportScam: "Laporkan Penipuan",
+    reporting: "Melaporkan...",
+    isLegit: "Ini Resmi",
+    submitting: "Mengirim...",
+    successTitle: "Pengiriman Berhasil",
+    successMsg: "Terima kasih telah membantu mengimunisasi komunitas.",
+    failedTitle: "Pengiriman Gagal",
+    tryAgain: "Coba lagi",
+    quote: "Setiap laporan mengimunisasi seluruh komunitas.",
+  },
+};
 
 interface ReportModalProps {
   detectedNumber: string;
@@ -19,9 +48,22 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   sourceUrl,
   onClose,
 }) => {
+  const [lang, setLang] = useState<"en" | "id">("id");
   const [status, setStatus] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
+
+  useEffect(() => {
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      chrome.storage.local.get(["vound_lang"], (data) => {
+        if (data.vound_lang === "en" || data.vound_lang === "id") {
+          setLang(data.vound_lang);
+        }
+      });
+    }
+  }, []);
+
+  const t = translations[lang];
 
   const reportScam = async () => {
     setStatus("submitting");
@@ -132,7 +174,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             letterSpacing: "-0.025em",
           }}
         >
-          Voundism: CoVound - Quick Triage
+          {t.title}
         </h4>
       </div>
 
@@ -145,10 +187,12 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               margin: "0 0 16px 0",
               color: "#475569",
             }}
-          >
-            Is <strong>{detectedNumber}</strong> claiming to be an official
-            contact for <strong>{institutionName}</strong>?
-          </p>
+            dangerouslySetInnerHTML={{
+              __html: t.question
+                .replace("{number}", detectedNumber)
+                .replace("{entity}", institutionName),
+            }}
+          />
           <div style={{ display: "flex", gap: "8px" }}>
             <button
               disabled={isSubmitting}
@@ -172,7 +216,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               }}
             >
               {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-              {isSubmitting ? "Reporting..." : "Report Scam"}
+              {isSubmitting ? t.reporting : t.reportScam}
             </button>
             <button
               disabled={isSubmitting}
@@ -190,7 +234,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 transition: "background-color 0.2s",
               }}
             >
-              {isSubmitting ? "Submitting..." : "It Is Legit"}
+              {isSubmitting ? t.submitting : t.isLegit}
             </button>
           </div>
         </>
@@ -211,10 +255,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               margin: "0 0 4px 0",
             }}
           >
-            Submission Successful
+            {t.successTitle}
           </p>
           <p style={{ fontSize: "11px", color: "#64748b", margin: 0 }}>
-            Thank you for helping immunize the community.
+            {t.successMsg}
           </p>
         </div>
       )}
@@ -230,7 +274,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               margin: "0 0 4px 0",
             }}
           >
-            Submission Failed
+            {t.failedTitle}
           </p>
           <button
             onClick={() => setStatus("idle")}
@@ -244,7 +288,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               textDecoration: "underline",
             }}
           >
-            Try again
+            {t.tryAgain}
           </button>
         </div>
       )}
@@ -260,7 +304,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           lineHeight: 1.4,
         }}
       >
-        "Every report immunizes the whole community."
+        "{t.quote}"
       </div>
     </div>
   );

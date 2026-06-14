@@ -26,8 +26,9 @@ Analyze the provided image (a screenshot of a social engineering scam) to extrac
 - context: A brief clinical description of the attack vector.
 
 2. SURGICAL SANITIZATION (PII):
-- Identify any Personally Identifiable Information (PII) that IS NOT the scammer's details.
-- This includes: victim faces, victim names, unrelated chat messages, or private banking details.
+- Identify ONLY highly sensitive Personally Identifiable Information (PII) that IS NOT the scammer's details.
+- This is LIMITED TO: human faces, full victim names, and complete private account numbers.
+- DO NOT redact the spoofed bank logo or generic help text.
 - For each item, provide bounding box coordinates relative to a 1000x1000 grid.
 
 Return the result strictly as a JSON object:

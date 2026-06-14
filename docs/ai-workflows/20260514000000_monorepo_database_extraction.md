@@ -1,3 +1,4 @@
+# ⚠️ Superseded — Architecture migrated to Supabase PostgreSQL & Cloudflare Pages
 # Workflow: Monorepo Database Extraction
 
 This document outlines the steps to extract the Prisma database and schema from the `vounder` workspace to the monorepo root. This ensures that the upcoming `covounding` workspace can share the same "Source of Truth" without architectural debt.

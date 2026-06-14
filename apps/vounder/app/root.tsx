@@ -1,3 +1,4 @@
+import { Toaster } from "@covound/ui/components/ui/sonner";
 import {
   isRouteErrorResponse,
   Links,
@@ -5,10 +6,17 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import { getLanguage } from "./lib/language.server";
 import "@covound/ui/styles/app.css";
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const lang = await getLanguage(request);
+  return { lang };
+}
 
 export const links: Route.LinksFunction = () => [
   {
@@ -38,8 +46,11 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const data = useLoaderData<typeof loader>();
+  const lang = data?.lang || "id";
+
   return (
-    <html lang="en">
+    <html lang={lang}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -48,6 +59,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster position="top-right" richColors closeButton />
         <ScrollRestoration />
         <Scripts />
       </body>

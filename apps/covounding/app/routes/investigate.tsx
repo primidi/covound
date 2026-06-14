@@ -1,4 +1,5 @@
 import { UserRole } from "@covound/db/types";
+import { CLINICAL_STATUS } from "@covound/logic/persona";
 import { Badge } from "@covound/ui/components/ui/badge";
 import { Button } from "@covound/ui/components/ui/button";
 import {
@@ -60,7 +61,7 @@ import { auth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
 
 export const meta: MetaFunction = () => [
-  { title: "CoVound | Investigator Dashboard" },
+  { title: "CoVound | Investigator" },
 ];
 
 export async function loader({ request }: { request: Request }) {
@@ -273,15 +274,159 @@ export default function InvestigatorDashboard() {
   const _fetcher = useFetcher();
   const actionData = useActionData() as any;
   const [previewEvidence, setPreviewEvidence] = useState<any[] | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);
+
+  const it = {
+    en: {
+      dashboardTitle: "Investigator Dashboard",
+      dashboardDesc: "Protect the registry by diagnosing pending anomalies.",
+      certifications: "Certifications",
+      forensicResident: "Forensic Resident",
+      reputation: "Reputation",
+      getKyckPoints: "Get 5 Points by Verifying Identity",
+      minPointsNote:
+        "* To start the first investigation, at least you have to have 10 points.",
+      dailyMission: "Daily Mission",
+      dailyMissionDesc:
+        "Submit consensus for pending anomalies to unlock your daily reputation bonus. Your clinical accuracy protects the registry.",
+      rewardClaimed: "Reward Claimed",
+      claimDailyBonus: "Claim Daily Bonus",
+      pendingQueue: "Pending Triage Queue",
+      pendingQueueDesc: "High-accuracy extraction from recent reporter reports.",
+      entityAffected: "Entity Affected",
+      specimen: "Specimen",
+      source: "Source",
+      preDiagnosis: "Pre-Diagnosis",
+      diagnosis: "Diagnosis",
+      quorumStatus: "Quorum Status",
+      forensicEvidence: "Forensic Evidence",
+      triageAction: "Triage Action",
+      unverifiedBank: "Unverified Bank",
+      preview: "Preview",
+      diagnosisFinalized: "Diagnosis Finalized",
+      deductPoints: "Deduct 10 pts & Sign",
+      stakeAndSign: "Stake & Sign",
+      caseClosed: "Case Closed",
+      emptyQueue:
+        "CoVounding reports the queue is clear. No pending anomalies found.",
+      sanitizedForensicEvidence: "Sanitized Forensic Evidence",
+      piiRedacted: "PII has been permanently redacted via AI extraction.",
+      showingArtifacts: "Showing {count} artifact(s).",
+      evidenceUnavailable: "Evidence unavailable or fully redacted",
+      artifactCounter: "Artifact {current} of {total}",
+      sanitizedArtifacts: "Sanitized Artifacts",
+      confidentialTriageOnly: "Confidential: Triage Only",
+      opSuccessful: "Operation successful",
+      restrictedTitle: "Restricted Access",
+      restrictedDesc: "Only verified investigators can access the triage feed.",
+      restrictedBtn: "Login to Verify",
+      downloadFirewall: "Download Firewall",
+    },
+    id: {
+      dashboardTitle: "Dashboard Investigator",
+      dashboardDesc: "Lindungi registri dengan mendiagnosis anomali yang tertunda.",
+      certifications: "Sertifikasi",
+      forensicResident: "Residen Forensik",
+      reputation: "Reputasi",
+      getKyckPoints: "Dapatkan 5 Poin dengan Verifikasi Identitas",
+      minPointsNote:
+        "* Untuk memulai investigasi pertama, Anda harus memiliki setidaknya 10 poin.",
+      dailyMission: "Misi Harian",
+      dailyMissionDesc:
+        "Kirim konsensus untuk anomali tertunda untuk membuka bonus reputasi harian Anda. Akurasi klinis Anda melindungi registri.",
+      rewardClaimed: "Hadiah Diklaim",
+      claimDailyBonus: "Klaim Bonus Harian",
+      pendingQueue: "Antrean Triase Tertunda",
+      pendingQueueDesc: "Ekstraksi akurasi tinggi dari laporan pelapor terbaru.",
+      entityAffected: "Entitas Terdampak",
+      specimen: "Spesimen",
+      source: "Sumber",
+      preDiagnosis: "Pre-Diagnosis",
+      diagnosis: "Diagnosis",
+      quorumStatus: "Status Kuorum",
+      forensicEvidence: "Bukti Forensik",
+      triageAction: "Tindakan Triase",
+      unverifiedBank: "Bank Tidak Terverifikasi",
+      preview: "Pratinjau",
+      diagnosisFinalized: "Diagnosis Final",
+      deductPoints: "Potong 10 poin & Tanda Tangan",
+      stakeAndSign: "Stake & Tanda Tangan",
+      caseClosed: "Kasus Ditutup",
+      emptyQueue:
+        "CoVounding melaporkan antrean bersih. Tidak ada anomali tertunda.",
+      sanitizedForensicEvidence: "Bukti Forensik Tersanitasi",
+      piiRedacted: "PII telah dihapus secara permanen melalui ekstraksi AI.",
+      showingArtifacts: "Menampilkan {count} artefak.",
+      evidenceUnavailable: "Bukti tidak tersedia atau terhapus sepenuhnya",
+      artifactCounter: "Artefak {current} dari {total}",
+      sanitizedArtifacts: "Artefak Tersanitasi",
+      confidentialTriageOnly: "Rahasia: Hanya untuk Triase",
+      opSuccessful: "Operasi berhasil",
+      restrictedTitle: "Akses Terbatas",
+      restrictedDesc:
+        "Hanya investigator terverifikasi yang dapat mengakses feed triase.",
+      restrictedBtn: "Masuk untuk Verifikasi",
+      downloadFirewall: "Unduh Firewall",
+    },
+  }[currentLang as "en" | "id"] || {
+    dashboardTitle: "Dashboard Investigator",
+    dashboardDesc: "Lindungi registri dengan mendiagnosis anomali yang tertunda.",
+    certifications: "Sertifikasi",
+    forensicResident: "Residen Forensik",
+    reputation: "Reputasi",
+    getKyckPoints: "Dapatkan 5 Poin dengan Verifikasi Identitas",
+    minPointsNote:
+      "* Untuk memulai investigasi pertama, Anda harus memiliki setidaknya 10 poin.",
+    dailyMission: "Misi Harian",
+    dailyMissionDesc:
+      "Kirim konsensus untuk anomali tertunda untuk membuka bonus reputasi harian Anda. Akurasi klinis Anda melindungi registri.",
+    rewardClaimed: "Hadiah Diklaim",
+    claimDailyBonus: "Klaim Bonus Harian",
+    pendingQueue: "Antrean Triase Tertunda",
+    pendingQueueDesc: "Ekstraksi akurasi tinggi dari laporan pelapor terbaru.",
+    entityAffected: "Entitas Terdampak",
+    specimen: "Spesimen",
+    source: "Sumber",
+    preDiagnosis: "Pre-Diagnosis",
+    diagnosis: "Diagnosis",
+    quorumStatus: "Status Kuorum",
+    forensicEvidence: "Bukti Forensik",
+    triageAction: "Tindakan Triase",
+    unverifiedBank: "Bank Tidak Terverifikasi",
+    preview: "Pratinjau",
+    diagnosisFinalized: "Diagnosis Final",
+    deductPoints: "Potong 10 poin & Tanda Tangan",
+    stakeAndSign: "Stake & Tanda Tangan",
+    caseClosed: "Kasus Ditutup",
+    emptyQueue: "CoVounding melaporkan antrean bersih. Tidak ada anomali tertunda.",
+    sanitizedForensicEvidence: "Bukti Forensik Tersanitasi",
+    piiRedacted: "PII telah dihapus secara permanen melalui ekstraksi AI.",
+    showingArtifacts: "Menampilkan {count} artefak.",
+    evidenceUnavailable: "Bukti tidak tersedia atau terhapus sepenuhnya",
+    artifactCounter: "Artefak {current} dari {total}",
+    sanitizedArtifacts: "Artefak Tersanitasi",
+    confidentialTriageOnly: "Rahasia: Hanya untuk Triase",
+    opSuccessful: "Operasi berhasil",
+    restrictedTitle: "Akses Terbatas",
+    restrictedDesc:
+      "Hanya investigator terverifikasi yang dapat mengakses feed triase.",
+    restrictedBtn: "Masuk untuk Verifikasi",
+    downloadFirewall: "Unduh Firewall",
+  };
 
   useEffect(() => {
     if (actionData?.error) {
       toast.error(actionData.error);
     } else if (actionData?.success) {
-      toast.success("Operation successful");
+      toast.success(it.opSuccessful);
     }
-  }, [actionData]);
+  }, [actionData, it.opSuccessful]);
+
+  const handleOpenPreview = (evidence: any[]) => {
+    setPreviewEvidence(evidence);
+    setCurrentImageIndex(0);
+  };
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -292,22 +437,6 @@ export default function InvestigatorDashboard() {
       },
     });
   };
-
-  const restrictedTranslations = {
-    en: {
-      title: "Restricted Access",
-      desc: "Only verified investigators can access the triage feed.",
-      btn: "Login to Verify",
-    },
-    id: {
-      title: "Akses Terbatas",
-      desc: "Hanya investigator terverifikasi yang dapat mengakses feed triase.",
-      btn: "Masuk untuk Verifikasi",
-    },
-  };
-  const rt =
-    restrictedTranslations[currentLang as "en" | "id"] ||
-    restrictedTranslations.id;
 
   if (!user) {
     return (
@@ -320,10 +449,10 @@ export default function InvestigatorDashboard() {
           </div>
           <CardHeader className="p-0 mb-6">
             <CardTitle className="text-3xl font-black mb-2 text-slate-900">
-              {rt.title}
+              {it.restrictedTitle}
             </CardTitle>
             <CardDescription className="text-base font-medium text-slate-500 leading-relaxed px-4">
-              {rt.desc}
+              {it.restrictedDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -332,11 +461,11 @@ export default function InvestigatorDashboard() {
               className="w-full h-14 text-lg font-black rounded-xl bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20 transition-all active:scale-[0.98]"
             >
               <Link
-                to="/login"
+                to="/login?role=INVESTIGATOR"
                 className="flex items-center justify-center gap-2"
               >
                 <LogIn className="h-5 w-5" />
-                {rt.btn}
+                {it.restrictedBtn}
               </Link>
             </Button>
           </CardContent>
@@ -376,6 +505,18 @@ export default function InvestigatorDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="hidden lg:flex items-center gap-2 font-bold border-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all"
+            >
+              <Link to="https://chrome.google.com/webstore/detail/voundism-placeholder">
+                <Shield className="h-4 w-4" />
+                {it.downloadFirewall}
+              </Link>
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -414,11 +555,9 @@ export default function InvestigatorDashboard() {
       <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
         <header>
           <h1 className="text-3xl font-black tracking-tight text-slate-900">
-            Investigator Dashboard
+            {it.dashboardTitle}
           </h1>
-          <p className="text-slate-500 font-medium">
-            Protect the registry by diagnosing pending anomalies.
-          </p>
+          <p className="text-slate-500 font-medium">{it.dashboardDesc}</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -426,7 +565,7 @@ export default function InvestigatorDashboard() {
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                 <Trophy className="h-3 w-3" />
-                Certifications
+                {it.certifications}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -441,7 +580,7 @@ export default function InvestigatorDashboard() {
                 ))}
                 {userBadges.length === 0 && (
                   <span className="text-slate-300 text-sm italic font-medium">
-                    Forensic Resident
+                    {it.forensicResident}
                   </span>
                 )}
               </div>
@@ -453,7 +592,7 @@ export default function InvestigatorDashboard() {
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
                 <Coins className="h-3 w-3" />
-                Reputation
+                {it.reputation}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -468,11 +607,10 @@ export default function InvestigatorDashboard() {
                     size="sm"
                     className="w-full bg-emerald-500 hover:bg-emerald-600 text-white border-none font-bold rounded-xl h-10 shadow-lg shadow-emerald-500/20"
                   >
-                    Get 5 Points by Verifying Identity
+                    {it.getKyckPoints}
                   </Button>
                   <p className="text-[10px] text-emerald-700 font-medium leading-tight">
-                    * To start the first investigation, at least you have to
-                    have 10 points.
+                    {it.minPointsNote}
                   </p>
                 </div>
               )}
@@ -485,13 +623,12 @@ export default function InvestigatorDashboard() {
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-bold text-indigo-900 uppercase tracking-widest flex items-center gap-2">
                 <ShieldCheck className="h-3 w-3" />
-                Daily Mission
+                {it.dailyMission}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-[11px] text-indigo-700/70 font-medium leading-relaxed">
-                Submit consensus for pending anomalies to unlock your daily
-                reputation bonus. Your clinical accuracy protects the registry.
+                {it.dailyMissionDesc}
               </p>
               <Form method="post">
                 <input type="hidden" name="intent" value="claim_reputation" />
@@ -501,7 +638,7 @@ export default function InvestigatorDashboard() {
                   size="sm"
                   className={`w-full font-bold h-10 rounded-xl ${alreadyClaimed ? "bg-slate-200 text-slate-500" : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200/50"}`}
                 >
-                  {alreadyClaimed ? "Reward Claimed" : "Claim Daily Bonus"}
+                  {alreadyClaimed ? it.rewardClaimed : it.claimDailyBonus}
                 </Button>
               </Form>
             </CardContent>
@@ -512,11 +649,9 @@ export default function InvestigatorDashboard() {
           <CardHeader className="bg-white border-b p-8">
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-indigo-600" />
-              Pending Triage Queue
+              {it.pendingQueue}
             </CardTitle>
-            <CardDescription>
-              High-accuracy extraction from recent reporter reports.
-            </CardDescription>
+            <CardDescription>{it.pendingQueueDesc}</CardDescription>
           </CardHeader>
 
           {/* Desktop Table View */}
@@ -524,15 +659,15 @@ export default function InvestigatorDashboard() {
             <Table>
               <TableHeader className="bg-slate-50">
                 <TableRow>
-                  <TableHead className="pl-8 h-12">Entity Affected</TableHead>
-                  <TableHead>Specimen</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Pre-Diagnosis</TableHead>
-                  <TableHead>Diagnosis</TableHead>
-                  <TableHead>Quorum Status</TableHead>
-                  <TableHead>Forensic Evidence</TableHead>
+                  <TableHead className="pl-8 h-12">{it.entityAffected}</TableHead>
+                  <TableHead>{it.specimen}</TableHead>
+                  <TableHead>{it.source}</TableHead>
+                  <TableHead>{it.preDiagnosis}</TableHead>
+                  <TableHead>{it.diagnosis}</TableHead>
+                  <TableHead>{it.quorumStatus}</TableHead>
+                  <TableHead>{it.forensicEvidence}</TableHead>
                   <TableHead className="text-right pr-8">
-                    Triage Action
+                    {it.triageAction}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -543,7 +678,7 @@ export default function InvestigatorDashboard() {
                     className="group hover:bg-slate-50/50 transition-colors border-slate-100"
                   >
                     <TableCell className="pl-8 py-6 font-bold text-slate-900">
-                      {anomaly.institution?.name || "Unverified Bank"}
+                      {anomaly.institution?.name || it.unverifiedBank}
                     </TableCell>
                     <TableCell className="max-w-[200px] break-all">
                       <span className="font-mono font-bold text-lg text-slate-800 tracking-tight">
@@ -573,7 +708,9 @@ export default function InvestigatorDashboard() {
                         ) : (
                           <ShieldCheck className="h-3 w-3 mr-1" />
                         )}
-                        {anomaly.preDiagnosis}
+                        {anomaly.preDiagnosis === "Legit Claimed"
+                          ? CLINICAL_STATUS.PRE_DIAGNOSIS.LEGIT[currentLang]
+                          : CLINICAL_STATUS.PRE_DIAGNOSIS.SCAM[currentLang]}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -588,7 +725,13 @@ export default function InvestigatorDashboard() {
                                 : "bg-amber-100 text-amber-700"
                         }`}
                       >
-                        {anomaly.diagnosis}
+                        {anomaly.diagnosis === "Verified Official"
+                          ? CLINICAL_STATUS.DIAGNOSIS.VERIFIED[currentLang]
+                          : anomaly.diagnosis === "Board Confirmed Scam"
+                            ? CLINICAL_STATUS.DIAGNOSIS.SCAM_CONFIRMED[currentLang]
+                            : anomaly.diagnosis === "Awaiting Board"
+                              ? CLINICAL_STATUS.DIAGNOSIS.AWAITING_BOARD[currentLang]
+                              : CLINICAL_STATUS.DIAGNOSIS.AWAITING_QUORUM[currentLang]}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -616,13 +759,13 @@ export default function InvestigatorDashboard() {
                     </TableCell>
                     <TableCell>
                       <Button
-                        onClick={() => setPreviewEvidence(anomaly.evidence)}
+                        onClick={() => handleOpenPreview(anomaly.evidence)}
                         variant="outline"
                         className="h-9 px-3 rounded-xl border-2 border-indigo-100 bg-indigo-50/50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 transition-colors flex items-center gap-2 group"
                       >
                         <Eye className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
                         <span className="font-bold text-[10px] uppercase tracking-widest">
-                          Preview
+                          {it.preview}
                         </span>
                       </Button>
                     </TableCell>
@@ -649,8 +792,8 @@ export default function InvestigatorDashboard() {
                         >
                           {anomaly.diagnosis === "Board Confirmed Scam" ||
                           anomaly.diagnosis === "Verified Official"
-                            ? "Diagnosis Finalized"
-                            : "Deduct 10 pts & Sign"}
+                            ? it.diagnosisFinalized
+                            : it.deductPoints}
                         </Button>
                       </Form>
                     </TableCell>
@@ -670,10 +813,10 @@ export default function InvestigatorDashboard() {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">
-                      Entity Affected
+                      {it.entityAffected}
                     </p>
                     <p className="font-bold text-slate-900">
-                      {anomaly.institution?.name || "Unverified Bank"}
+                      {anomaly.institution?.name || it.unverifiedBank}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -688,7 +831,13 @@ export default function InvestigatorDashboard() {
                               : "bg-amber-100 text-amber-700"
                       }`}
                     >
-                      {anomaly.diagnosis}
+                      {anomaly.diagnosis === "Verified Official"
+                        ? CLINICAL_STATUS.DIAGNOSIS.VERIFIED[currentLang]
+                        : anomaly.diagnosis === "Board Confirmed Scam"
+                          ? CLINICAL_STATUS.DIAGNOSIS.SCAM_CONFIRMED[currentLang]
+                          : anomaly.diagnosis === "Awaiting Board"
+                            ? CLINICAL_STATUS.DIAGNOSIS.AWAITING_BOARD[currentLang]
+                            : CLINICAL_STATUS.DIAGNOSIS.AWAITING_QUORUM[currentLang]}
                     </Badge>
                     <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
                       <div className="flex -space-x-1">
@@ -717,7 +866,7 @@ export default function InvestigatorDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                      Specimen
+                      {it.specimen}
                     </p>
                     <p className="font-mono font-bold text-slate-800 break-all">
                       {anomaly.detectedNumber}
@@ -725,7 +874,7 @@ export default function InvestigatorDashboard() {
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                      Source
+                      {it.source}
                     </p>
                     <Badge
                       variant="outline"
@@ -743,7 +892,7 @@ export default function InvestigatorDashboard() {
 
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                    Pre-Diagnosis
+                    {it.preDiagnosis}
                   </p>
                   <Badge
                     variant="secondary"
@@ -760,11 +909,11 @@ export default function InvestigatorDashboard() {
 
                 <div className="flex gap-3 pt-2">
                   <Button
-                    onClick={() => setPreviewEvidence(anomaly.evidence)}
+                    onClick={() => handleOpenPreview(anomaly.evidence)}
                     variant="outline"
                     className="flex-1 h-12 border-2 border-indigo-50 bg-indigo-50/30 text-indigo-600 font-bold rounded-xl gap-2"
                   >
-                    <Eye className="h-4 w-4" /> Preview
+                    <Eye className="h-4 w-4" /> {it.preview}
                   </Button>
 
                   <Form method="post" className="flex-1">
@@ -780,8 +929,8 @@ export default function InvestigatorDashboard() {
                     >
                       {anomaly.diagnosis === "Board Confirmed Scam" ||
                       anomaly.diagnosis === "Verified Official"
-                        ? "Case Closed"
-                        : "Stake & Sign"}
+                        ? it.caseClosed
+                        : it.stakeAndSign}
                     </Button>
                   </Form>
                 </div>
@@ -807,44 +956,66 @@ export default function InvestigatorDashboard() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-slate-900 flex items-center gap-2">
               <ShieldCheck className="h-6 w-6 text-indigo-500" />
-              Sanitized Forensic Evidence
+              {it.sanitizedForensicEvidence}
             </DialogTitle>
             <DialogDescription className="text-base text-slate-500 font-medium">
-              PII has been permanently redacted via AI extraction. Showing{" "}
-              {previewEvidence?.length || 0} artifact(s).
+              {it.piiRedacted}{" "}
+              {it.showingArtifacts.replace(
+                "{count}",
+                (previewEvidence?.length || 0).toString(),
+              )}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 max-h-[60vh] overflow-y-auto p-2">
+          <div className="mt-4 max-h-[70vh] flex flex-col items-center">
             {previewEvidence && previewEvidence.length > 0 ? (
-              previewEvidence.map((ev: any) => (
-                <div
-                  key={ev.id}
-                  className="bg-slate-100 rounded-2xl aspect-video w-full flex items-center justify-center border-2 border-dashed border-slate-200 relative overflow-hidden group/img"
-                >
+              <div className="w-full space-y-4">
+                <div className="relative group/carousel bg-slate-100 rounded-[2rem] overflow-hidden aspect-video border-2 border-slate-200 shadow-inner flex items-center justify-center">
                   <img
-                    src={ev.sanitizedUrl}
-                    alt="Sanitized Evidence"
-                    className="object-contain w-full h-full"
+                    src={previewEvidence[currentImageIndex].sanitizedUrl}
+                    alt={`Evidence ${currentImageIndex + 1}`}
+                    className="max-w-full max-h-full object-contain"
                   />
-                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
-                    <Button variant="secondary" size="sm" asChild>
-                      <a
-                        href={ev.sanitizedUrl}
-                        target="_blank"
-                        rel="noreferrer"
+                  
+                  {previewEvidence.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentImageIndex(prev => (prev > 0 ? prev - 1 : previewEvidence.length - 1))}
+                        className="absolute left-4 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-slate-900 opacity-0 group-hover/carousel:opacity-100 transition-all hover:bg-white active:scale-95"
                       >
-                        Full Size
-                      </a>
-                    </Button>
-                  </div>
+                        <ChevronDown className="h-6 w-6 rotate-90" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentImageIndex(prev => (prev < previewEvidence.length - 1 ? prev + 1 : 0))}
+                        className="absolute right-4 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-slate-900 opacity-0 group-hover/carousel:opacity-100 transition-all hover:bg-white active:scale-95"
+                      >
+                        <ChevronDown className="h-6 w-6 -rotate-90" />
+                      </button>
+                    </>
+                  )}
                 </div>
-              ))
+                
+                <div className="flex items-center justify-between px-4">
+                  <div className="flex gap-2">
+                    {previewEvidence.map((_, i) => (
+                      <div 
+                        key={i} 
+                        className={`h-1.5 rounded-full transition-all ${i === currentImageIndex ? "w-8 bg-indigo-600" : "w-2 bg-slate-300"}`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm font-black text-slate-400 uppercase tracking-widest">
+                    {it.artifactCounter
+                      .replace("{current}", (currentImageIndex + 1).toString())
+                      .replace("{total}", previewEvidence.length.toString())}
+                  </p>
+                </div>
+              </div>
             ) : (
-              <div className="col-span-full py-12 text-center text-slate-400 space-y-2 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                <EyeOff className="h-8 w-8 mx-auto opacity-50" />
-                <p className="font-bold text-sm">
-                  Evidence unavailable or fully redacted
-                </p>
+              <div className="w-full py-20 text-center text-slate-400 space-y-4 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                <EyeOff className="h-12 w-12 mx-auto opacity-30" />
+                <p className="font-bold text-lg">{it.evidenceUnavailable}</p>
               </div>
             )}
           </div>
@@ -852,11 +1023,11 @@ export default function InvestigatorDashboard() {
             <div className="flex items-center gap-2 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
               <Eye className="h-4 w-4" />
               <span className="text-xs font-bold uppercase tracking-wider">
-                Sanitized Artifacts
+                {it.sanitizedArtifacts}
               </span>
             </div>
             <p className="text-xs font-bold text-amber-600 uppercase tracking-widest bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
-              Confidential: Triage Only
+              {it.confidentialTriageOnly}
             </p>
           </div>
         </DialogContent>

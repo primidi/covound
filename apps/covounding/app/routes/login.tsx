@@ -32,6 +32,8 @@ import { authClient } from "~/lib/auth.client";
 import { auth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
 
+import { toast } from "sonner";
+
 const translations = {
   en: {
     reporter: "Reporter",
@@ -224,14 +226,19 @@ export async function action({ request }: ActionFunctionArgs) {
 
 import type { MetaFunction } from "react-router";
 
+import { useSearchParams } from "react-router";
+
 export const meta: MetaFunction = () => [{ title: "CoVound | Login" }];
 
 export default function Login() {
   const { lang } = useLoaderData<typeof loader>();
   const t = translations[lang as keyof typeof translations] || translations.id;
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialRole = (searchParams.get("role") as UserRole) || UserRole.REPORTER;
+
   const [isSignUp, setIsSignUp] = useState(false);
-  const [role, setRole] = useState<UserRole>(UserRole.REPORTER);
+  const [role, setRole] = useState<UserRole>(initialRole);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -242,18 +249,27 @@ export default function Login() {
   const navigate = useNavigate();
   const fetcher = useFetcher();
 
-  // Redirect investigator after successful role assignment
+  const handleRoleChange = (newRole: UserRole) => {
+    setRole(newRole);
+    setSearchParams({ role: newRole });
+  };
+
+  // Handle registration success
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data) {
       const data = fetcher.data as any;
       if (data.success) {
-        navigate("/investigate");
+        toast.success("Clinical Registration Complete", {
+          description: "Please authenticate your credentials to establish Zero-Trust authority.",
+        });
+        setIsSignUp(false);
+        setLoading(false);
       } else if (data.error) {
         setError(data.error);
         setLoading(false);
       }
     }
-  }, [fetcher.state, fetcher.data, navigate]);
+  }, [fetcher.state, fetcher.data]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,14 +335,14 @@ export default function Login() {
         <div className="flex p-1 bg-slate-200/50 rounded-2xl">
           <button
             type="button"
-            onClick={() => setRole(UserRole.REPORTER)}
+            onClick={() => handleRoleChange(UserRole.REPORTER)}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${role === UserRole.REPORTER ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             <HeartPulse className="h-4 w-4" /> {t.reporter}
           </button>
           <button
             type="button"
-            onClick={() => setRole(UserRole.INVESTIGATOR)}
+            onClick={() => handleRoleChange(UserRole.INVESTIGATOR)}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${role === UserRole.INVESTIGATOR ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             <ShieldCheck className="h-4 w-4" /> {t.investigator}

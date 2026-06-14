@@ -5,6 +5,21 @@ export const PERSONA = {
   MISSION: {
     en: "Turn Your Trauma Into Their Takedown.",
     id: "Ubah Kepanikan Menjadi Keadilan.",
+    TARGET_ZERO: {
+      en: "Target: 0 Scam Users",
+      id: "Target: 0 Pengguna Tertipu",
+    },
+  },
+};
+
+export const HERO_COPY = {
+  title: {
+    en: "Turn Trauma Into Takedown. Active Search Immunization.",
+    id: "Ubah Kepanikan Menjadi Keadilan. Imunisasi Pencarian Aktif.",
+  },
+  subtitle: {
+    en: "Achieving our target of 0 scam users by neutralizing digital threat vectors in real-time. Install the Voundism firewall or enter the Triage Room.",
+    id: "Mencapai target 0 pengguna tertipu dengan menetralkan vektor ancaman digital secara real-time. Pasang firewall Voundism atau masuk Ruang Triase.",
   },
 };
 
@@ -48,23 +63,71 @@ export const DIAGNOSIS_TEMPLATES = {
     en: "Remember, scammers often spoof numbers in search results. Always check the verification badge.",
     id: "Ingat, penipu sering memalsukan nomor di hasil pencarian. Selalu periksa tanda verifikasi.",
   },
+  SCAM_CONFIRMED: {
+    en: "Board Decision: This specimen is a confirmed threat. Immediate isolation is required.",
+    id: "Keputusan Dewan: Spesimen ini terkonfirmasi sebagai ancaman. Diperlukan isolasi segera.",
+  },
+  VERIFIED_OFFICIAL: {
+    en: "Clinical Result: This contact matches our cryptographically signed registry for {entityName}.",
+    id: "Hasil Klinis: Kontak ini cocok dengan registri kami yang ditandatangani secara kriptografi untuk {entityName}.",
+  },
+};
+
+export const CLINICAL_STATUS = {
+  PRE_DIAGNOSIS: {
+    LEGIT: {
+      en: "Legit Claimed",
+      id: "Klaim Sah",
+    },
+    SCAM: {
+      en: "Scam Suspected",
+      id: "Terduga Penipuan",
+    },
+  },
+  DIAGNOSIS: {
+    AWAITING_QUORUM: {
+      en: "Awaiting Quorum",
+      id: "Menunggu Kuorum",
+    },
+    VERIFIED: {
+      en: "Verified Official",
+      id: "Resmi Terverifikasi",
+    },
+    SCAM_CONFIRMED: {
+      en: "Board Confirmed Scam",
+      id: "Dewan Konfirmasi Penipuan",
+    },
+    AWAITING_BOARD: {
+      en: "Awaiting Board",
+      id: "Menunggu Dewan",
+    },
+  },
 };
 
 export function getDiagnosis(
   entityName: string,
-  type: "anomaly" | "unverified" = "anomaly",
+  type: "anomaly" | "unverified" | "scam" | "verified" = "anomaly",
   lang: "en" | "id" = "id",
 ) {
   const intros = DIAGNOSIS_TEMPLATES.INTRO[lang];
   const intro = intros[Math.floor(Math.random() * intros.length)];
 
-  const warning =
-    type === "anomaly"
-      ? DIAGNOSIS_TEMPLATES.ANOMALY_DETECTED[lang].replace(
-          "{entityName}",
-          entityName,
-        )
-      : DIAGNOSIS_TEMPLATES.UNVERIFIED_WARNING[lang];
+  let warning = "";
+  if (type === "anomaly") {
+    warning = DIAGNOSIS_TEMPLATES.ANOMALY_DETECTED[lang].replace(
+      "{entityName}",
+      entityName,
+    );
+  } else if (type === "unverified") {
+    warning = DIAGNOSIS_TEMPLATES.UNVERIFIED_WARNING[lang];
+  } else if (type === "scam") {
+    warning = DIAGNOSIS_TEMPLATES.SCAM_CONFIRMED[lang];
+  } else if (type === "verified") {
+    warning = DIAGNOSIS_TEMPLATES.VERIFIED_OFFICIAL[lang].replace(
+      "{entityName}",
+      entityName,
+    );
+  }
 
   return {
     intro,

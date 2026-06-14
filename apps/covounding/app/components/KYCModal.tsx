@@ -128,7 +128,7 @@ export function KYCModal({ isOpen, onClose, onVerified }: KYCModalProps) {
                   <Input
                     placeholder="E.g., John Doe"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                     disabled={isVerifying}
                     className="h-14 text-lg font-bold border-2 border-slate-100 focus:border-indigo-500 transition-all rounded-xl px-4"
                   />
@@ -141,7 +141,7 @@ export function KYCModal({ isOpen, onClose, onVerified }: KYCModalProps) {
                     placeholder="16 Digit Number"
                     value={nik}
                     maxLength={16}
-                    onChange={(e) => setNik(e.target.value.replace(/\D/g, ""))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNik(e.target.value.replace(/\D/g, ""))}
                     disabled={isVerifying}
                     className="h-14 text-xl font-mono font-bold border-2 border-slate-100 focus:border-indigo-500 transition-all rounded-xl px-4 tracking-[0.2em]"
                   />
@@ -153,7 +153,7 @@ export function KYCModal({ isOpen, onClose, onVerified }: KYCModalProps) {
                   <Input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setSelfie(e.target.files?.[0] || null)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelfie(e.target.files?.[0] || null)}
                     disabled={isVerifying}
                     className="h-14 py-3 font-bold border-2 border-slate-100 focus:border-indigo-500 transition-all rounded-xl px-4 cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                   />

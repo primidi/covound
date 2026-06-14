@@ -1,13 +1,13 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { type ActionFunctionArgs, data } from "react-router";
 import { extractScamMetadata } from "~/lib/gemini.server";
 import { redactImage } from "~/lib/redact.server";
+import { getSupabaseClient } from "~/lib/supabase.server";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action(args: ActionFunctionArgs) {
+  const { request, context } = args;
   const formData = await request.formData();
   const files = formData.getAll("evidence") as File[];
 
@@ -38,6 +38,9 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
+  const env = (context as any)?.cloudflare?.env || {};
+  const supabase = getSupabaseClient(env);
+
   try {
     const results = [];
     const aggregatedMetadata = {
@@ -56,28 +59,49 @@ export async function action({ request }: ActionFunctionArgs) {
       // Step 2: Server-Side Redaction (Sharp)
       const sanitizedBuffer = await redactImage(buffer, result.piiCoordinates);
 
-      // Step 3: Save Sanitized Artifact (Public)
+      // Step 3: Save Sanitized Artifact (Public Supabase Storage)
       const timestamp = Date.now() + Math.random(); // Ensure unique timestamp
       const sanitizedFilename = `sanitized-${timestamp}.png`;
-      const publicPath = path.join(process.cwd(), "public", "artifacts");
-      await fs.mkdir(publicPath, { recursive: true });
-      await fs.writeFile(
-        path.join(publicPath, sanitizedFilename),
-        sanitizedBuffer,
-      );
 
-      // Step 4: Save Original Evidence (Private Transient Buffer)
+      const { error: sanitizedError } = await supabase
+        .storage
+        .from("sanitized-evidence")
+        .upload(sanitizedFilename, sanitizedBuffer, {
+          contentType: file.type || "image/png",
+          upsert: true,
+        });
+
+      if (sanitizedError) {
+        console.error("Supabase sanitized upload error:", sanitizedError);
+        throw new Error(`Failed to upload sanitized evidence: ${sanitizedError.message}`);
+      }
+
+      const { data: publicUrlData } = supabase
+        .storage
+        .from("sanitized-evidence")
+        .getPublicUrl(sanitizedFilename);
+      const sanitizedUrl = publicUrlData.publicUrl;
+
+      // Step 4: Save Original Evidence (Private Supabase Storage)
       const originalFilename = `raw-${timestamp}.png`;
-      const privatePath = path.join(
-        process.cwd(),
-        "../../storage/private/unredacted",
-      );
-      await fs.mkdir(privatePath, { recursive: true });
-      await fs.writeFile(path.join(privatePath, originalFilename), buffer);
+      const { error: rawError } = await supabase
+        .storage
+        .from("raw-evidence")
+        .upload(originalFilename, buffer, {
+          contentType: file.type || "image/png",
+          upsert: true,
+        });
+
+      if (rawError) {
+        console.error("Supabase raw upload error:", rawError);
+        throw new Error(`Failed to upload raw evidence: ${rawError.message}`);
+      }
+
+      const originalUrl = originalFilename;
 
       results.push({
-        sanitizedUrl: `/artifacts/${sanitizedFilename}`,
-        originalUrl: `/private/unredacted/${originalFilename}`,
+        sanitizedUrl,
+        originalUrl,
       });
 
       if (result.scammerNumber)

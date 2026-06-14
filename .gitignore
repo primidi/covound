@@ -27,3 +27,7 @@ packages/db/generated/
 /scripts/
 /apps/covounding/public/artifacts/
 
+# Local IDE and tool cache
+.wrangler/
+.vscode/
+

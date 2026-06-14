@@ -1,7 +1,7 @@
 # ADR 0004: Ternary Annotation Model for Voundism Shield
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 The Voundism extension currently only redacts unknown/pending numbers. Verified numbers are ignored (no badge), and there is no distinction between "pending/unknown" and "confirmed scam". We need to provide clear, actionable status for all detected numbers.

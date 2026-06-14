@@ -15,7 +15,7 @@ An organization (e.g., bank, fintech) whose contact information is protected and
 A specific communication channel (Phone, WhatsApp, URL) signed by an **Entity**'s verified key.
 
 ### Entity Public Key
-A cryptographic key hosted by an **Entity** on their authoritative domain (via /.well-known/covound-key.json).
+A cryptographic key hosted by an **Entity** on their authoritative domain (via `/.well-known/covound-key.json`).
 
 ## Systems & Roles
 
@@ -29,7 +29,7 @@ The real-time protection interfaces (Browser Extension and LLM Server). Voundism
 A verified community member who uses the **CoVounding** portal to triage reports.
 
 ### KYC (Simulated)
-The current functional identity verification mockup in `KYCModal.tsx`. Pending reconstruction of the original PrivyID integration.
+A mockup flow implemented in `KYCModal.tsx` to verify investigator identity. Simulates clinical identity matching and manual verification capability before formal integration of PrivyID/VIDA credentials.
 
 ### Persona (The Digital ER Doctor)
 The behavioral framework for all interactions: calm, empathetic, authoritative.
@@ -58,3 +58,22 @@ The visual masking of any unverified contact point (phone numbers, URLs) claimin
 The general clinical process of masking data. In CoVound, this is always performed as a "Surgical" act that preserves context while removing harm.
 
 ### Transient Buffer
+A temporary storage layer holding raw incident evidence and threat coordinates for exactly 24 hours. This allows investigators to review reported screenshots, build consensus, and extract threat vectors before the PII-laden raw evidence is permanently expunged or archived to AES-256 encrypted Cold Storage, complying with UU PDP privacy mandates.
+
+### Ghost IGD
+A prevention-first design philosophy focused on neutralizing threat vectors at the browser/LLM layer so users never execute contact, thereby reducing victim counts to zero.
+
+### Live Counter / Immunization Counter
+A landing page metric demonstrating real-time immunizations (neutralized anomalies and secured connections) to replace traditional, alarmist "security block" branding.
+
+### Daily Mission
+Interactive micro-tasks presented to investigators to gamify incident triaging, accelerating quorum consensus on recently reported threat vectors.
+
+### Ternary Badge
+Dynamic, color-coded security badges (gray for pending/diagnosing, orange for staked, red for verified threat) injected beside numbers/links on host pages to provide contextual visual warnings.
+
+### normalizePhone
+A shared utility that cleanses and standardizes phone number formats (converting local `08...` into international `+628...`) to prevent duplicate entry registry bypasses.
+
+### Warm-up Protocol
+An automated diagnostics suite run post-deployment to verify edge routing, database transactions, and KV sync states are fully active.

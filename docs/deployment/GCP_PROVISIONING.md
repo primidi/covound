@@ -1,7 +1,7 @@
-﻿# GCP Infrastructure Provisioning Guide (Clinical)
+# GCP Infrastructure Provisioning Guide (Clinical Backup)
 
 ## Overview
-This guide provides the exact `gcloud` command sequence to provision a Zero-Trust, persistent environment for the CoVound monorepo on GCP Cloud Run.
+This guide provides the exact `gcloud` command sequence to provision a Zero-Trust, persistent environment for the CoVound monorepo on GCP Cloud Run using Cloud SQL (PostgreSQL) instead of legacy SQLite/GCS FUSE.
 
 ---
 
@@ -18,11 +18,16 @@ gcloud services enable \
     artifactregistry.googleapis.com \
     secretmanager.googleapis.com \
     storage.googleapis.com \
+    sqladmin.googleapis.com \
+    vpcaccess.googleapis.com \
     iam.googleapis.com
 ```
 
-## 2. Storage & Registry
-### 2.1: Artifact Registry
+---
+
+## 2. Storage & Database Provisioning
+
+### 2.1 Artifact Registry (Docker Images)
 ```bash
 gcloud artifacts repositories create covound-images \
     --repository-format=docker \
@@ -30,17 +35,29 @@ gcloud artifacts repositories create covound-images \
     --description="CoVound Monorepo Images"
 ```
 
-### 2.2: Persistent GCS Bucket
+### 2.2 Cloud SQL (PostgreSQL 17)
 ```bash
-gcloud storage buckets create gs://covound-db-bucket \
-    --location=us-central1 \
-    --uniform-bucket-level-access
+# Create PostgreSQL instance (micro tier for cost-efficiency)
+gcloud sql instances create covound-postgres \
+    --database-version=POSTGRES_17 \
+    --tier=db-f1-micro \
+    --region=us-central1
+
+# Create the database within the instance
+gcloud sql databases create covound \
+    --instance=covound-postgres
+
+# Set the password for the database administrator
+gcloud sql users set-password postgres \
+    --instance=covound-postgres \
+    --password="your-postgres-password"
 ```
 
 ---
 
 ## 3. Security & IAM
-### 3.1: Create Dedicated Service Account
+
+### 3.1 Create Dedicated Service Account
 ```bash
 gcloud iam service-accounts create covound-runtime-sa \
     --display-name="CoVound Runtime Service Account"
@@ -48,12 +65,12 @@ gcloud iam service-accounts create covound-runtime-sa \
 export SA_EMAIL="covound-runtime-sa@$PROJECT_ID.iam.gserviceaccount.com"
 ```
 
-### 3.2: Grant Least-Privilege Roles
+### 3.2 Grant Least-Privilege Roles
 ```bash
-# Grant access to the DB bucket
-gcloud storage buckets add-iam-policy-binding gs://covound-db-bucket \
+# Grant access to Cloud SQL (Database client role)
+gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$SA_EMAIL" \
-    --role="roles/storage.objectUser"
+    --role="roles/cloudsql.client"
 
 # Grant access to Secret Manager
 gcloud projects add-iam-policy-binding $PROJECT_ID \
@@ -64,7 +81,8 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 ---
 
 ## 4. Workload Identity Federation (GitHub)
-### 4.1: Create Pool and Provider
+
+### 4.1 Create Pool and Provider
 ```bash
 gcloud iam workload-identity-pools create "github-pool" \
     --location="global" \
@@ -81,7 +99,7 @@ gcloud iam workload-identity-pools providers create-oidc "github-provider" \
     --issuer-uri="https://token.actions.githubusercontent.com"
 ```
 
-### 4.2: Bind Service Account to GitHub Repo
+### 4.2 Bind Service Account to GitHub Repo
 ```bash
 # Replace OWNER/REPO with your private repo path
 gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
@@ -92,12 +110,13 @@ gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
 ---
 
 ## 5. Secret Manager Setup
-Create and populate the following secrets:
+Create and populate the required secrets:
 ```bash
+echo -n "postgresql://postgres:your-postgres-password@/covound?host=/cloudsql/$PROJECT_ID:us-central1:covound-postgres" | gcloud secrets create DATABASE_URL --data-file=-
 echo -n "your_secret_value" | gcloud secrets create BETTER_AUTH_SECRET --data-file=-
 echo -n "your_gemini_key" | gcloud secrets create GEMINI_API_KEY --data-file=-
 echo -n "32_char_hex_key" | gcloud secrets create ENCRYPTION_KEY --data-file=-
 ```
 
 ---
-*"The infrastructure is sterilized. Ready for deployment."*
+*"The backup infrastructure blueprints are updated. Ready."*

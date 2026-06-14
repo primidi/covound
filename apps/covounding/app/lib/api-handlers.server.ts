@@ -1,4 +1,4 @@
-import { AnomalySchema } from "@covound/logic";
+import { AnomalySchema, normalizePhone } from "@covound/logic";
 import { data } from "react-router";
 import { prisma } from "../db.server";
 import { validateExtensionAccess } from "./security.server";
@@ -68,9 +68,10 @@ export async function handleReportAnomaly(request: Request) {
       payload = await request.json();
     }
 
+    const normalizedValue = normalizePhone(payload.detectedNumber);
     const parsed = AnomalySchema.safeParse({
-      value: payload.detectedNumber,
-      type: payload.detectedNumber?.startsWith("http") ? "url" : "whatsapp",
+      value: normalizedValue,
+      type: normalizedValue?.startsWith("http") ? "url" : "whatsapp",
       sourceUrl: payload.sourceUrl,
       status: "isolated",
     });
@@ -162,9 +163,10 @@ export async function handleReportLegit(request: Request) {
       payload = await request.json();
     }
 
+    const normalizedValue = normalizePhone(payload.detectedNumber);
     const parsed = AnomalySchema.safeParse({
-      value: payload.detectedNumber,
-      type: payload.detectedNumber?.startsWith("http") ? "url" : "whatsapp",
+      value: normalizedValue,
+      type: normalizedValue?.startsWith("http") ? "url" : "whatsapp",
       sourceUrl: payload.sourceUrl,
       status: "isolated",
     });

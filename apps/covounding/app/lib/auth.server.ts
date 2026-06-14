@@ -1,11 +1,12 @@
 import path from "node:path";
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
 import dotenv from "dotenv";
-import { prisma } from "../db.server";
 
 // Explicitly load root .env
 dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
+
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { prisma } from "../db.server";
 
 const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
   ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(",")
@@ -13,7 +14,7 @@ const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "sqlite",
+    provider: "postgresql",
   }),
   secret: process.env.BETTER_AUTH_SECRET,
   emailAndPassword: {
@@ -29,6 +30,7 @@ export const auth = betterAuth({
   },
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
+    cookiePrefix: "covounding",
   },
   baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: trustedOrigins,

@@ -1,3 +1,4 @@
+import { normalizePhone } from "@covound/logic";
 import type { LoaderFunctionArgs } from "react-router";
 import { z } from "zod";
 import { prisma } from "../db.server";
@@ -6,8 +7,7 @@ const VerifyQuerySchema = z.object({
   number: z
     .string()
     .min(5)
-    .max(20)
-    .regex(/^[+0-9]+$/, "Invalid phone number format"),
+    .max(30), // Increased max for safety
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
   }
 
-  const { number } = result.data;
+  const number = normalizePhone(result.data.number);
 
   // Find if this number is verified
   const verified = await prisma.verifiedContact.findFirst({

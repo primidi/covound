@@ -1,7 +1,9 @@
-﻿# ADR 0002: Persistent SQLite via Google Cloud Storage (GCS) FUSE
+# ADR 0002: Persistent SQLite via Google Cloud Storage (GCS) FUSE
 
 ## Status
-Proposed
+Superseded
+
+*Superseded by [ADR 0005: Migrating to Supabase PostgreSQL & Cloudflare Pages/Workers](0005-supabase-postgresql-cloudflare.md) on 2026-06-13.*
 
 ## Date
 2026-05-30
@@ -14,9 +16,9 @@ Moving to a managed database like Cloud SQL (PostgreSQL) is the long-term goal b
 ## Decision
 We will use **SQLite with persistence enabled via Cloud Storage FUSE volume mounts**.
 
-1.  **GCS Bucket**: A dedicated bucket (\gs://covound-db-bucket\) will hold the \dev.db\ file.
-2.  **Volume Mount**: The bucket will be mounted to \/mnt/gcs/\ in the Cloud Run containers.
-3.  **Concurrency Limit**: To prevent database corruption (as SQLite does not support concurrent writes from multiple processes/containers on FUSE), we will enforce a strict **\max-scale: 1\** and **\max-concurrency: 80\** (default) on the Cloud Run service.
+1.  **GCS Bucket**: A dedicated bucket (`gs://covound-db-bucket`) will hold the `dev.db` file.
+2.  **Volume Mount**: The bucket will be mounted to `/mnt/gcs/` in the Cloud Run containers.
+3.  **Concurrency Limit**: To prevent database corruption (as SQLite does not support concurrent writes from multiple processes/containers on FUSE), we will enforce a strict **`max-scale: 1`** and **`max-concurrency: 80`** (default) on the Cloud Run service.
 
 ## Alternatives Considered
 
@@ -24,6 +26,7 @@ We will use **SQLite with persistence enabled via Cloud Storage FUSE volume moun
 - **Pros**: Production-grade, high concurrency, automatic backups.
 - **Cons**: Significantly higher cost for MVP, requires VPC connector or Auth Proxy, requires application-level logic changes to move away from Better-SQLite3.
 - **Rejected**: Overkill for the initial demo and rapid MVP cycle.
+- *Note: This decision was historically reversed on 2026-06-13. The application was migrated to Cloudflare Pages/Workers and Supabase PostgreSQL to support serverless scale on the edge, rendering GCS FUSE volume mounts and native node-sqlite libraries obsolete.*
 
 ### Local Ephemeral Storage
 - **Pros**: Zero configuration.
@@ -34,4 +37,5 @@ We will use **SQLite with persistence enabled via Cloud Storage FUSE volume moun
 - **Persistence**: Data survives container restarts and new deployments.
 - **Scaling Restriction**: The service cannot scale beyond 1 instance. This is acceptable for the MVP traffic volume.
 - **Performance**: Disk I/O to GCS is slower than local disk; however, SQLite's read-heavy nature for the Registry makes this negligible for the Shield's performance.
-- **Configuration**: The \DATABASE_URL\ must be set to \ile:/mnt/gcs/dev.db\ in production.
+- **Configuration**: The `DATABASE_URL` must be set to `file:/mnt/gcs/dev.db` in production.
+

@@ -9,8 +9,13 @@ import { BadgeWithModal } from "./components/BadgeWithModal";
 
 const PHONE_REGEX = /(\+62|08)[0-9]{8,12}/g;
 
-let whitelist: any[] = [];
-let blacklist: any[] = [];
+interface RegistryEntry {
+  value: string;
+  institution: string;
+}
+
+let whitelist: RegistryEntry[] = [];
+let blacklist: RegistryEntry[] = [];
 
 /**
  * Phase 6: Local Storage Hardening [FR3.2]
@@ -169,13 +174,19 @@ setInterval(syncRegistry, 1000 * 60 * 5);
 setInterval(scanAndRedact, 3000);
 
 if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message.type === "FORCE_SYNC") {
-      syncRegistry().then(() => {
-        scanAndRedact();
-        sendResponse({ success: true });
-      });
-      return true;
-    }
-  });
+  chrome.runtime.onMessage.addListener(
+    (
+      message: any,
+      _sender: chrome.runtime.MessageSender,
+      sendResponse: (response?: any) => void,
+    ) => {
+      if (message.type === "FORCE_SYNC") {
+        syncRegistry().then(() => {
+          scanAndRedact();
+          sendResponse({ success: true });
+        });
+        return true;
+      }
+    },
+  );
 }

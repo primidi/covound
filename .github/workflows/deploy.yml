@@ -1,73 +1,50 @@
-name: CoVound Clinical Deployment
+name: CoVound Cloudflare & Supabase Deployment
 
 on:
   push:
     branches: [ main ]
 
-env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GAR_LOCATION: us-central1
-  REPOSITORY: covound-images
-  DB_BUCKET: covound-db-bucket-889836930910
-  SERVICE_ACCOUNT: ${{ secrets.GCP_SA_EMAIL }}
-  WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Google Auth
-        id: auth
-        uses: google-github-actions/auth@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.SERVICE_ACCOUNT }}
+          node-version: '22'
+          cache: 'npm'
 
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+      - name: Install Monorepo Dependencies
+        run: npm ci
 
-      - name: Authorize Docker
-        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+      - name: Generate Prisma Client
+        run: npx prisma generate --workspace=@covound/db
 
-      # 🏥 Deploy Covounding (Reporter/Investigator Portal)
-      - name: Build and Push Covounding
-        run: |
-          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/covounding:${{ github.sha }} -f apps/covounding/Dockerfile .
-          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/covounding:${{ github.sha }}
+      - name: Run Database Migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx prisma db push --workspace=@covound/db --accept-data-loss
 
-      - name: Deploy Covounding to Cloud Run
-        run: |
-          gcloud run deploy covounding \
-            --image ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/covounding:${{ github.sha }} \
-            --region ${{ env.GAR_LOCATION }} \
-            --service-account ${{ env.SERVICE_ACCOUNT }} \
-            --set-env-vars "NODE_ENV=production,DATABASE_URL=file:/app/dev.db" \
-            --set-secrets "BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest,VITE_VOUNDISM_SECRET=VITE_VOUNDISM_SECRET:latest" \
-            --allow-unauthenticated \
-            --port 8080 \
-            --timeout 300
+      - name: Build Covounding
+        run: npm run build --workspace=covounding
 
-      # 🛡️ Deploy Vounder (Admin Board)
-      - name: Build and Push Vounder
-        run: |
-          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/vounder:${{ github.sha }} -f apps/vounder/Dockerfile .
-          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/vounder:${{ github.sha }}
+      - name: Build Vounder
+        run: npm run build --workspace=vounder
 
-      - name: Deploy Vounder to Cloud Run
-        run: |
-          gcloud run deploy vounder \
-            --image ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/vounder:${{ github.sha }} \
-            --region ${{ env.GAR_LOCATION }} \
-            --service-account ${{ env.SERVICE_ACCOUNT }} \
-            --set-env-vars "NODE_ENV=production,DATABASE_URL=file:/app/dev.db" \
-            --set-secrets "BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest" \
-            --allow-unauthenticated \
-            --port 8080 \
-            --timeout 300
+      - name: Deploy Covounding
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/covounding
+
+      - name: Deploy Vounder
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/vounder

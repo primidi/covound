@@ -19,7 +19,10 @@ function getCorsHeaders(request?: Request) {
  * Task 1: Build the Registry Sync API [FR3.2]
  * Exposes the verified contact registry for extension synchronization.
  */
-export async function loader({ request }: { request: Request }) {
+export async function loader(args: any) {
+  const request = args.request as Request;
+  const context = args.context;
+
   // EARLY AUTH: Validate the secret
   try {
     validateExtensionAccess(request);
@@ -28,6 +31,19 @@ export async function loader({ request }: { request: Request }) {
       { error: "Unauthorized" },
       { status: 401, headers: getCorsHeaders(request) },
     );
+  }
+
+  const kv = context?.cloudflare?.env?.VERIFIED_CONTACTS;
+  if (kv) {
+    try {
+      const cached = await kv.get("snapshot");
+      if (cached) {
+        console.log("Edge Cache: Registry snapshot retrieved from Cloudflare KV.");
+        return data(JSON.parse(cached), { headers: getCorsHeaders(request) });
+      }
+    } catch (e) {
+      console.error("KV read error in snapshot api:", e);
+    }
   }
 
   const [contacts, rejectedAnomalies] = await prisma.$transaction([
@@ -57,12 +73,20 @@ export async function loader({ request }: { request: Request }) {
     status: "scam",
   }));
 
-  return data(
-    { whitelist, blacklist },
-    {
-      headers: getCorsHeaders(request),
-    },
-  );
+  const snapshot = { whitelist, blacklist };
+
+  if (kv) {
+    try {
+      await kv.put("snapshot", JSON.stringify(snapshot), {
+        expirationTtl: 300, // Cache for 5 minutes
+      });
+      console.log("Edge Cache: Re-hydrated registry snapshot in Cloudflare KV.");
+    } catch (e) {
+      console.error("KV write error in snapshot api:", e);
+    }
+  }
+
+  return data(snapshot, { headers: getCorsHeaders(request) });
 }
 
 export async function action({ request }: ActionFunctionArgs) {

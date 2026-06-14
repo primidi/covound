@@ -1,8 +1,7 @@
 import { index, type RouteConfig, route } from "@react-router/dev/routes";
 
 export default [
-  index("routes/home.tsx"),
-  route("admin", "routes/admin.tsx"),
+  index("routes/dashboard.tsx"),
   route("kyc-image/:id", "routes/kyc-image.$id.tsx"),
   route("login", "routes/login.tsx"),
   route("api/verify", "routes/api.verify.ts"),

@@ -1,3 +1,5 @@
+# 📦 Historical — JuaraVibeCoding Hackathon Demo Script
+
 [DIRECTOR'S NOTE: ETHICAL BRIEF FOR VIDEO EDITING]
 - The Scammer's Phone Number WILL be visible. Moral justification: Scammers forfeit privacy when committing fraud; exposing the number protects the community (the core value of Voundism).
 - The Spoofed Bank's Name & Logo WILL be censored. Moral justification: The bank is a victim of brand hijacking. Exposing them unfairly damages their reputation for a vulnerability in search algorithms, violating responsible disclosure standards.
@@ -45,3 +47,46 @@ Our digital IGD is CoVounding, a zero-trust web portal where victims report inci
 
 It's an early prototype, but you can try it at the link below. Thank you!"
 *(Action: Smile and nod)*
+
+
+---
+
+# 🚀 Current Production Demo Script (Post-Edge Migration)
+**Date:** June 13, 2026
+**Target Features:** Bilingual switch, Live Counter, Extension download CTA, Supabase storage, Cloudflare KV replication.
+
+[0:00 - 0:15] - THE IMMUNIZATION MANDATE
+[Tone: Calm, Empathetic, Dr. Gia Persona]
+"In a digital emergency, panic is the scammer's best ally. We built CoVound not just to block attacks, but to *immunize* the community. Our target metric is simple: **0 victims in the digital triage room**. 
+
+*(Action: Show the new homepage hero. Point to the bilingual language dropdown and switch from English to Indonesian)*
+Notice how the entire interface instantly adapts. Clinical empathy must speak the user's language."
+
+[0:15 - 0:35] - ACTIVE IMMUNIZATION SHIELD
+"On the landing page, we display our **Live Immunization Counter**—tracking connections protected and anomalies neutralized in real time. 
+
+*(Action: Scroll down and highlight the navbar / success CTAs)*
+To prevent victims from ever entering the digital ER, we've integrated the **Voundism Firewall** CTA across the entire portal, driving immediate extension downloads."
+
+[0:35 - 1:10] - EDGE-FIRST TRIAGE PIPELINE
+"Let's report an anomaly. 
+*(Action: Submit a mock scam chronology on /report. Upload two screenshots and demonstrate drawing redacts sequentially on the canvas)*
+Reporters can upload multiple evidence files, redacting sensitive details in their browser. On the backend, we run an edge-compatible Gemini Vision sanitization script that isolates the threat vector, uploading files safely into public/private Supabase Storage buckets.
+
+*(Action: Show the KYC simulated upgrade path and the resulting forensic STPL PDF)*
+Once submitted, reporters receive a legally compliant digital forensic PDF to file police reports."
+
+[1:10 - 1:40] - INVESTIGATOR QUORUM & EDGE REPLICATION
+"Now we move to the investigator side.
+*(Action: Log in as investigator. Show the Daily Mission card and click the claim button)*
+Investigators earn reputation by completing Daily Missions and triaging cases. In the dashboard, screenshot evidence is rendered securely in a carousel.
+
+*(Action: Stake points and verify the case. Switch to Admin portal and click Promote)*
+Once the community reaches consensus, the admin approves the threat vector. The system immediately replicates it to Cloudflare KV. 
+
+*(Action: Open demo-scam.html. Refresh registry. Show the badge changing from yellow PENDING to red VOUNDISM ANOMALY)*
+Within seconds, the Voundism extension retrieves the snapshot from KV edge cache, immunizing thousands of users globally."
+
+[1:40 - 2:00] - THE OUTRO
+"By combining community consensus with edge-first infrastructure, we achieve zero-latency protection at a baseline cost of zero dollars. Visit the link below to install the digital firewall. Let's make the internet a clean, sterile workspace."
+*(Action: Smile, nod, fade out)*
