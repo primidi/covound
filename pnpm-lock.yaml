@@ -123,6 +123,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.4.0(react-hook-form@7.79.0(react@19.2.7))
+      '@prisma/client':
+        specifier: ^6.4.1
+        version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
       '@react-router/cloudflare':
         specifier: ^7.15.0
         version: 7.17.0(@cloudflare/workers-types@4.20260613.1)(react-router@7.15.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@5.9.3)
@@ -147,6 +150,9 @@ importers:
       lucide-react:
         specifier: ^1.14.0
         version: 1.18.0(react@19.2.7)
+      prisma:
+        specifier: ^6.4.1
+        version: 6.19.3(typescript@5.9.3)
       react:
         specifier: ^19.2.6
         version: 19.2.7
@@ -223,6 +229,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.4.0(react-hook-form@7.79.0(react@19.2.7))
+      '@prisma/client':
+        specifier: ^6.4.1
+        version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
       '@react-router/cloudflare':
         specifier: ^7.15.0
         version: 7.17.0(@cloudflare/workers-types@4.20260613.1)(react-router@7.15.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@5.9.3)
@@ -238,6 +247,9 @@ importers:
       isbot:
         specifier: ^5.1.36
         version: 5.1.42
+      prisma:
+        specifier: ^6.4.1
+        version: 6.19.3(typescript@5.9.3)
       react:
         specifier: ^19.2.6
         version: 19.2.7

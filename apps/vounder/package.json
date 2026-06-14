@@ -13,6 +13,8 @@
     "@covound/db": "workspace:*",
     "@covound/logic": "workspace:*",
     "@covound/ui": "workspace:*",
+    "@prisma/client": "^6.19.3",
+    "prisma": "^6.4.1",
     "@fontsource-variable/geist": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@react-router/cloudflare": "^7.15.0",
