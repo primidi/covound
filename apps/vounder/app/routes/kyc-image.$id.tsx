@@ -28,25 +28,51 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return new Response("Not found", { status: 404 });
   }
 
-  const filePath = path.join(
-    process.cwd(),
-    "..",
-    "..",
-    "storage",
-    "kyc",
-    kycRequest.selfiePath,
-  );
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!fs.existsSync(filePath)) {
-    return new Response("Image file missing from storage", { status: 404 });
+  if (supabaseUrl && supabaseKey) {
+    // Fetch from Supabase Storage REST API
+    const downloadUrl = `${supabaseUrl}/storage/v1/object/raw-evidence/${kycRequest.selfiePath}`;
+    const downloadRes = await fetch(downloadUrl, {
+      headers: {
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+    });
+
+    if (!downloadRes.ok) {
+      return new Response("Image file missing from storage", { status: 404 });
+    }
+
+    const arrayBuffer = await downloadRes.arrayBuffer();
+    return new Response(arrayBuffer, {
+      headers: {
+        "Content-Type": downloadRes.headers.get("Content-Type") || "image/jpeg",
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
+  } else {
+    // Local fallback using fs
+    const filePath = path.join(
+      process.cwd(),
+      "..",
+      "..",
+      "storage",
+      "kyc",
+      kycRequest.selfiePath,
+    );
+
+    if (!fs.existsSync(filePath)) {
+      return new Response("Image file missing from storage", { status: 404 });
+    }
+
+    const file = fs.readFileSync(filePath);
+
+    return new Response(file, {
+      headers: {
+        "Content-Type": "image/jpeg", // or use mime-types library if necessary
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
   }
-
-  const file = fs.readFileSync(filePath);
-
-  return new Response(file, {
-    headers: {
-      "Content-Type": "image/jpeg", // or use mime-types library if necessary
-      "Cache-Control": "private, max-age=3600",
-    },
-  });
 }

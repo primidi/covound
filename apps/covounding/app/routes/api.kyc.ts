@@ -5,12 +5,6 @@ import type { ActionFunctionArgs } from "react-router";
 import { prisma } from "~/db.server";
 import { auth } from "~/lib/auth.server";
 
-// Ensure the storage directory exists
-const uploadDir = path.join(process.cwd(), "..", "..", "storage", "kyc");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 export async function action({ request }: ActionFunctionArgs) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -44,13 +38,40 @@ export async function action({ request }: ActionFunctionArgs) {
     // Encrypt the NIK
     const encryptedNik = encryptData(nik, secretKey);
 
-    // Save the file manually using fs
     const arrayBuffer = await selfieFile.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
     const ext = path.extname(selfieFile.name) || ".jpg";
     const fileName = `kyc_${session.user.id}_${Date.now()}${ext}`;
-    const filePath = path.join(uploadDir, fileName);
-    fs.writeFileSync(filePath, buffer);
+
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (supabaseUrl && supabaseKey) {
+      // Upload to Supabase Storage REST API
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/raw-evidence/${fileName}`;
+      const uploadRes = await fetch(uploadUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${supabaseKey}`,
+          "Content-Type": selfieFile.type || "image/jpeg",
+        },
+        body: arrayBuffer,
+      });
+
+      if (!uploadRes.ok) {
+        const errorText = await uploadRes.text();
+        console.error("Supabase upload failed:", errorText);
+        throw new Error("Failed to upload image to remote storage");
+      }
+    } else {
+      // Local fallback using fs
+      const buffer = Buffer.from(arrayBuffer);
+      const uploadDir = path.join(process.cwd(), "..", "..", "storage", "kyc");
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const filePath = path.join(uploadDir, fileName);
+      fs.writeFileSync(filePath, buffer);
+    }
 
     // Save to the database
     await prisma.kycRequest.upsert({
