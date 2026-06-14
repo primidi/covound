@@ -1,4 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import * as pkg from "../generated/client/index.js";
+
+const { PrismaClient } = pkg;
 
 /**
  * Shared database connection for the CoVound monorepo.
