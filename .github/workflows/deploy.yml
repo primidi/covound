@@ -22,12 +22,12 @@ jobs:
         run: npm ci
 
       - name: Generate Prisma Client
-        run: npx prisma generate --schema=packages/db/prisma/schema.prisma
+        run: npm run db:generate --workspace=@covound/db
 
       - name: Run Database Migrations
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx prisma db push --schema=packages/db/prisma/schema.prisma --accept-data-loss
+        run: npm run db:push --workspace=@covound/db
 
       - name: Build Covounding
         run: npm run build --workspace=covounding
