@@ -1,4 +1,4 @@
-import { PrismaClient } from "@covound/prisma-client";
+import { PrismaClient } from "@covound/prisma-client/edge";
 
 /**
  * Shared database connection for the CoVound monorepo.
