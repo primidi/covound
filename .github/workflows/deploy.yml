@@ -46,6 +46,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/covounding
+          packageManager: pnpm
 
       - name: Deploy Vounder
         uses: cloudflare/wrangler-action@v3
@@ -53,4 +54,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/vounder
+          packageManager: pnpm
 
