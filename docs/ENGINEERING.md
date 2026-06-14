@@ -1,7 +1,7 @@
 # CoVound: Engineering DNA & Protocols
 
 ## 1. Modular Architecture (Monorepo)
-Strict TypeScript monorepo using **npm workspaces**.
+Strict TypeScript monorepo using **pnpm workspaces**.
 - **apps/**: Domain-specific applications (Remix, Extension, MCP).
 - **packages/**: Shared infrastructure:
     - `@covound/db`: Shared Prisma/PostgreSQL client. Fields use `snake_case` conventions at the database mapping layer (via `@@map` and `@map`).

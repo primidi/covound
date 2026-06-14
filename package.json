@@ -4,25 +4,23 @@
   "version": "1.0.0",
   "type": "module",
   "description": "CoVound: Truth and Trust Founder Companion",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+
   "scripts": {
-    "dev:vounder": "npm run dev --workspace=vounder",
-    "dev:co-vounder": "npm run dev --workspace=co-vounder",
-    "dev:voundism": "npm run dev --workspace=voundism",
-    "dev:covounding": "npm run dev --workspace=covounding",
-    "engine:hunt": "npm run start --workspace=anomaly-engine",
+    "dev:vounder": "pnpm --filter vounder dev",
+    "dev:co-vounder": "pnpm --filter co-vounder dev",
+    "dev:voundism": "pnpm --filter voundism dev",
+    "dev:covounding": "pnpm --filter covounding dev",
+    "engine:hunt": "pnpm --filter anomaly-engine start",
     "workflows:up": "tsx scripts/run-workflows.ts",
     "workflows:down": "tsx scripts/revert-workflows.ts",
-    "vounder:create": "npm run bootstrap --workspace=vounder",
-    "db:push": "cd packages/db && npx prisma db push && cd ../..",
+    "vounder:create": "pnpm --filter vounder bootstrap",
+    "db:push": "pnpm --filter @covound/db db:push",
+    "db:generate": "pnpm --filter @covound/db db:generate",
     "db:seed": "tsx scripts/seed-qa.ts",
     "db:reset": "tsx scripts/reset-local-db.ts",
     "db:clean": "tsx scripts/truncate-db.ts",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "echo \"Error: no test specified\" && exit 0",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "test": "echo \"Error: no test specified\" ; exit 0",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -54,8 +52,10 @@
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2"
   },
-  "overrides": {
-    "@prisma/client": "^6.4.1",
-    "prisma": "^6.4.1"
+  "pnpm": {
+    "overrides": {
+      "@prisma/client": "^6.4.1",
+      "prisma": "^6.4.1"
+    }
   }
 }

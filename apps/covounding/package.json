@@ -9,12 +9,13 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
-    "@covound/db": "*",
-    "@covound/logic": "*",
-    "@covound/ui": "*",
+    "@covound/db": "workspace:*",
+    "@covound/logic": "workspace:*",
+    "@covound/ui": "workspace:*",
     "@fontsource-variable/geist": "^5.2.8",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
+    "lucide-react": "^1.14.0",
     "@react-router/cloudflare": "^7.15.0",
     "@react-router/node": "7.15.0",
     "@react-router/serve": "7.15.0",

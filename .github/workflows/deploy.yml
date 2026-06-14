@@ -12,28 +12,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install Monorepo Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: npm run db:generate --workspace=@covound/db
+        run: pnpm --filter @covound/db db:generate
 
       - name: Run Database Migrations
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npm run db:push --workspace=@covound/db
+        run: pnpm --filter @covound/db db:push
 
       - name: Build Covounding
-        run: npm run build --workspace=covounding
+        run: pnpm --filter covounding build
 
       - name: Build Vounder
-        run: npm run build --workspace=vounder
+        run: pnpm --filter vounder build
 
       - name: Deploy Covounding
         uses: cloudflare/wrangler-action@v3
@@ -48,3 +53,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/vounder
+

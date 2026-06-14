@@ -17,14 +17,14 @@
   "author": "Gharis Primada Hariyono",
   "license": "ISC",
   "dependencies": {
-    "@covound/db": "*",
-    "@covound/logic": "*",
+    "@covound/db": "workspace:*",
+    "@covound/logic": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "dotenv": "^17.4.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "prisma": "latest",
+    "prisma": "^6.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }

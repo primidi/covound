@@ -10,9 +10,9 @@
     "bootstrap": "tsx app/lib/bootstrap.ts"
   },
   "dependencies": {
-    "@covound/db": "*",
-    "@covound/logic": "*",
-    "@covound/ui": "*",
+    "@covound/db": "workspace:*",
+    "@covound/logic": "workspace:*",
+    "@covound/ui": "workspace:*",
     "@fontsource-variable/geist": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@react-router/cloudflare": "^7.15.0",
