@@ -3,7 +3,7 @@
 
 generator client {
   provider     = "prisma-client"
-  output       = "../node_modules/@covound/prisma-client"
+  output       = "../../../node_modules/@covound/prisma-client"
   moduleFormat = "esm"
 }
 

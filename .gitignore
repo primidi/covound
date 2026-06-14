@@ -31,3 +31,6 @@ packages/db/generated/
 .wrangler/
 .vscode/
 
+
+# Prisma generated client
+packages/db/src/generated/
