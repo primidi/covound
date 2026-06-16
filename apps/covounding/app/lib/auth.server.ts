@@ -1,9 +1,3 @@
-import path from "node:path";
-import dotenv from "dotenv";
-
-// Explicitly load root .env
-dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
-
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "../db.server";
