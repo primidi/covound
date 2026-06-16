@@ -16,11 +16,12 @@ import {
 import { ArrowLeft, Medal, Star, Trophy } from "lucide-react";
 import type { MetaFunction } from "react-router";
 import { Link, useLoaderData } from "react-router";
-import { prisma } from "~/db.server";
+import { getPrisma } from "~/db.server";
 
 export const meta: MetaFunction = () => [{ title: "CoVound | Leaderboard" }];
 
-export async function loader() {
+export async function loader({ context }: { context: { cloudflare: { env: Record<string, string | undefined> } } }) {
+  const prisma = getPrisma(context.cloudflare.env);
   const topHunters = await prisma.user.findMany({
     where: {
       OR: [{ role: "INVESTIGATOR" }, { reputationPoints: { gt: 0 } }],
@@ -91,7 +92,7 @@ export default function LeaderboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {topHunters.map((hunter: any, index: number) => (
+                {topHunters.map((hunter, index) => (
                   <TableRow
                     key={hunter.id}
                     className="hover:bg-slate-50 transition-colors border-slate-100"

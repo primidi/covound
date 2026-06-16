@@ -2,10 +2,12 @@ import "dotenv/config";
 import { stdin as input, stdout as output } from "node:process";
 import readline from "node:readline/promises";
 import { UserRole } from "@covound/db";
-import { prisma } from "../db.server.js";
-import { auth } from "./auth.server.js";
+import { getPrisma } from "../db.server.js";
+import { getAuth } from "./auth.server.js";
 
 async function bootstrap() {
+  const prisma = getPrisma(process.env);
+  const auth = getAuth(process.env);
   const rl = readline.createInterface({ input, output });
 
   console.log("\n🛠️  CoVound Founder Bootstrapper");
@@ -36,9 +38,9 @@ async function bootstrap() {
 
     console.log("✅ Founder account role updated to ADMIN!");
     console.log("   You can now sign in at http://localhost:5173/login");
-  } catch (error: any) {
+  } catch (error) {
     console.error("\n❌ Failed to create account:");
-    console.error(error.message || error);
+    console.error(error instanceof Error ? error.message : error);
   } finally {
     rl.close();
     process.exit(0);

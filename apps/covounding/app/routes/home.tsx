@@ -33,9 +33,9 @@ import {
   useLoaderData,
   useNavigate,
 } from "react-router";
-import { prisma } from "~/db.server";
+import { getPrisma } from "~/db.server";
 import { authClient } from "~/lib/auth.client";
-import { auth } from "~/lib/auth.server";
+import { getAuth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
 import { HERO_COPY } from "@covound/logic";
 
@@ -102,7 +102,10 @@ const translations = {
   },
 };
 
-export async function loader({ request }: { request: Request }) {
+export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Record<string, string | undefined> } } }) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const [session, lang] = await Promise.all([
     auth.api.getSession({ headers: request.headers }),
     getLanguage(request),
@@ -284,6 +287,7 @@ export default function LandingPage() {
           <h1 className="text-4xl md:text-7xl font-black tracking-tight text-slate-900 leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-700">
             {t.heroTitle.split(".").map((part, i) => (
               <span
+                // biome-ignore lint/suspicious/noArrayIndexKey: split parts are static
                 key={i}
                 className={i === 1 ? "text-emerald-600 block sm:inline" : ""}
               >

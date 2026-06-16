@@ -40,8 +40,8 @@ import {
   redirect,
   useLoaderData,
 } from "react-router";
-import { prisma } from "~/db.server";
-import { auth } from "~/lib/auth.server";
+import { getPrisma } from "~/db.server";
+import { getAuth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
 
 export const meta: MetaFunction = () => [
@@ -135,7 +135,10 @@ const translations = {
   },
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const [session, lang] = await Promise.all([
     auth.api.getSession({ headers: request.headers }),
     getLanguage(request),
@@ -164,7 +167,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     orderBy: { createdAt: "desc" },
   });
 
-  const secretKey = process.env.ENCRYPTION_KEY || "";
+  const secretKey = env.ENCRYPTION_KEY || "";
   const pendingKycRaw = await prisma.kycRequest.findMany({
     where: { status: "pending" },
     include: { user: true },
@@ -183,7 +186,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { institutions, contacts, anomalies, pendingKyc, user: session.user, lang };
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context }: ActionFunctionArgs) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const session = await auth.api.getSession({
     headers: request.headers,
   });

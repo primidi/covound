@@ -47,9 +47,9 @@ import {
 } from "react-router";
 import { KYCModal } from "~/components/KYCModal";
 import { EvidenceCanvas } from "~/components/EvidenceCanvas";
-import { prisma } from "~/db.server";
+import { getPrisma } from "~/db.server";
 import { authClient } from "~/lib/auth.client";
-import { auth } from "~/lib/auth.server";
+import { getAuth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
 
 const PHONE_REGEX = /(\+62|08)[0-9]{8,12}/g;
@@ -139,7 +139,10 @@ import type { MetaFunction } from "react-router";
 
 export const meta: MetaFunction = () => [{ title: "CoVound | Report" }];
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const [session, lang] = await Promise.all([
     auth.api.getSession({ headers: request.headers }),
     getLanguage(request),
@@ -152,7 +155,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  let incidents: any[] = [];
+  let incidents: Awaited<ReturnType<typeof prisma.incident.findMany>> = [];
   if (session) {
     incidents = await prisma.incident.findMany({
       where: { authorId: session.user.id },
@@ -163,8 +166,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { session, lang, incidents };
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context }: ActionFunctionArgs) {
   try {
+    const env = context.cloudflare.env;
+    const prisma = getPrisma(env);
+    const auth = getAuth(env);
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session) {
       return { error: "Unauthorized", status: 401 };
@@ -276,22 +282,22 @@ export default function TriageRoom() {
   const _rt = restrictedTranslations[lang];
 
   useEffect(() => {
-    if (actionData && (actionData as any).success) {
+    if (actionData && (actionData as { success?: boolean }).success) {
       setStep(4);
       setIsKycModalOpen(true);
     }
   }, [actionData]);
 
   useEffect(() => {
-    if (fetcher.data && (fetcher.data as any).scammerNumber) {
-      const data = fetcher.data as any;
+    const data = fetcher.data as { scammerNumber?: string; entityName?: string; evidence?: string } | null;
+    if (data && data.scammerNumber) {
       setAiResult({
         scammerNumber: data.scammerNumber,
         entityName: data.entityName,
         evidence: data.evidence,
       });
       setExtractedNumbers((prev) =>
-        Array.from(new Set([...prev, data.scammerNumber])),
+        Array.from(new Set([...prev, data.scammerNumber || ""])),
       );
     }
   }, [fetcher.data]);

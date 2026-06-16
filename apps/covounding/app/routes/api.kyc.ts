@@ -2,10 +2,13 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { encryptData } from "@covound/logic";
 import type { ActionFunctionArgs } from "react-router";
-import { prisma } from "~/db.server";
-import { auth } from "~/lib/auth.server";
+import { getPrisma } from "~/db.server";
+import { getAuth } from "~/lib/auth.server";
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context }: ActionFunctionArgs) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,7 +29,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // Get the ENCRYPTION_KEY from env
-    const secretKey = process.env.ENCRYPTION_KEY;
+    const secretKey = env.ENCRYPTION_KEY;
     if (!secretKey || secretKey.length !== 32) {
       console.error("Missing or invalid ENCRYPTION_KEY in environment");
       return Response.json(
@@ -42,8 +45,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const ext = path.extname(selfieFile.name) || ".jpg";
     const fileName = `kyc_${session.user.id}_${Date.now()}${ext}`;
 
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = env.SUPABASE_URL;
+    const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (supabaseUrl && supabaseKey) {
       // Upload to Supabase Storage REST API
@@ -65,7 +68,8 @@ export async function action({ request }: ActionFunctionArgs) {
     } else {
       // Local fallback using fs
       const buffer = Buffer.from(arrayBuffer);
-      const uploadDir = path.join(process.cwd(), "..", "..", "storage", "kyc");
+      const cwd = typeof process !== "undefined" && process.cwd ? process.cwd() : "";
+      const uploadDir = path.join(cwd, "..", "..", "storage", "kyc");
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }

@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { prisma } from "@covound/db";
+import { getPrisma } from "~/db.server";
 
 const ENCRYPTION_KEY =
   process.env.ARCHIVE_KEY || "default-secret-key-32-chars-long!!"; // Must be 32 chars
@@ -26,7 +26,8 @@ function encrypt(text: string): string {
  * Sunday Marathon Phase 3: Task 2
  * Moves incidents older than 24 hours to cold storage and wipes raw evidence.
  */
-export async function archiveExpiredIncidents() {
+export async function archiveExpiredIncidents(env: Record<string, string | undefined>) {
+  const prisma = getPrisma(env);
   const expiryDate = new Date();
   expiryDate.setHours(expiryDate.getHours() - 24);
 
@@ -45,7 +46,7 @@ export async function archiveExpiredIncidents() {
 
   for (const incident of expiredIncidents) {
     try {
-      await prisma.$transaction(async (tx: any) => {
+      await prisma.$transaction(async (tx) => {
         // 1. Move to Cold Storage
         await tx.archivedIncident.create({
           data: {

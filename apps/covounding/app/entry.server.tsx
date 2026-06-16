@@ -16,11 +16,12 @@ export default async function handleRequest(
   // INTERCEPTION POINT: Handle extension API before Router CSRF check
   // React Router 7's mandatory CSRF check happens during the route action matching phase.
   // By returning a response here, we bypass that check entirely for these specific paths.
+  const env = (routerContext.staticHandlerContext as any)?.cloudflare?.env;
   if (url.pathname === "/api/report-anomaly") {
-    return handleReportAnomaly(request);
+    return handleReportAnomaly(request, env);
   }
   if (url.pathname === "/api/report-legit") {
-    return handleReportLegit(request);
+    return handleReportLegit(request, env);
   }
 
   const controller = new AbortController();

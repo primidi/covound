@@ -1,3 +1,3 @@
-import { prisma } from "@covound/db/client";
+import { getPrisma } from "@covound/db/client";
 
-export { prisma };
+export { getPrisma };

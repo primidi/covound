@@ -1,7 +1,7 @@
 import { normalizePhone } from "@covound/logic";
 import type { LoaderFunctionArgs } from "react-router";
 import { z } from "zod";
-import { prisma } from "../db.server";
+import { getPrisma } from "../db.server";
 
 const VerifyQuerySchema = z.object({
   number: z
@@ -10,7 +10,8 @@ const VerifyQuerySchema = z.object({
     .max(30), // Increased max for safety
 });
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const prisma = getPrisma(context.cloudflare.env);
   const url = new URL(request.url);
   const params = Object.fromEntries(url.searchParams.entries());
 

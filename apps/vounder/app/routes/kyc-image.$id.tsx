@@ -2,10 +2,13 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { UserRole } from "@covound/db/types";
 import type { LoaderFunctionArgs } from "react-router";
-import { prisma } from "~/db.server";
-import { auth } from "~/lib/auth.server";
+import { getPrisma } from "~/db.server";
+import { getAuth } from "~/lib/auth.server";
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params, context }: LoaderFunctionArgs) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
@@ -28,8 +31,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return new Response("Not found", { status: 404 });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = env.SUPABASE_URL;
+  const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (supabaseUrl && supabaseKey) {
     // Fetch from Supabase Storage REST API
@@ -53,8 +56,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     });
   } else {
     // Local fallback using fs
+    const cwd = typeof process !== "undefined" && process.cwd ? process.cwd() : "";
     const filePath = path.join(
-      process.cwd(),
+      cwd,
       "..",
       "..",
       "storage",

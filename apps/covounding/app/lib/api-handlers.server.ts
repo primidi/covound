@@ -1,6 +1,6 @@
 import { AnomalySchema, normalizePhone } from "@covound/logic";
 import { data } from "react-router";
-import { prisma } from "../db.server";
+import { getPrisma } from "../db.server";
 import { validateExtensionAccess } from "./security.server";
 
 /**
@@ -34,8 +34,9 @@ function handleOptions(request: Request) {
  * Shared handler for reporting anomalies from the extension.
  * Bypasses CSRF by using GET or being called from entry.server.tsx.
  */
-export async function handleReportAnomaly(request: Request) {
+export async function handleReportAnomaly(request: Request, env: Record<string, string | undefined>) {
   if (request.method === "OPTIONS") return handleOptions(request);
+  const prisma = getPrisma(env);
 
   // Allow both GET and POST. GET is used to bypass CSRF in React Router 7.
   if (request.method !== "POST" && request.method !== "GET") {
@@ -48,7 +49,7 @@ export async function handleReportAnomaly(request: Request) {
   // EARLY AUTH: Validate the secret
   try {
     validateExtensionAccess(request);
-  } catch (_err: any) {
+  } catch (_err) {
     return data(
       { error: "Unauthorized" },
       { status: 401, headers: getCorsHeaders(request) },
@@ -56,7 +57,7 @@ export async function handleReportAnomaly(request: Request) {
   }
 
   try {
-    let payload: any;
+    let payload: Record<string, string | null | undefined>;
     if (request.method === "GET") {
       const url = new URL(request.url);
       payload = {
@@ -65,7 +66,7 @@ export async function handleReportAnomaly(request: Request) {
         institutionName: url.searchParams.get("institutionName"),
       };
     } else {
-      payload = await request.json();
+      payload = await request.json() as Record<string, string | null | undefined>;
     }
 
     const normalizedValue = normalizePhone(payload.detectedNumber);
@@ -132,8 +133,9 @@ export async function handleReportAnomaly(request: Request) {
  * Shared handler for reporting legitimacy claims from the extension.
  * Bypasses CSRF by using GET or being called from entry.server.tsx.
  */
-export async function handleReportLegit(request: Request) {
+export async function handleReportLegit(request: Request, env: Record<string, string | undefined>) {
   if (request.method === "OPTIONS") return handleOptions(request);
+  const prisma = getPrisma(env);
 
   if (request.method !== "POST" && request.method !== "GET") {
     return data(
@@ -144,7 +146,7 @@ export async function handleReportLegit(request: Request) {
 
   try {
     validateExtensionAccess(request);
-  } catch (_err: any) {
+  } catch (_err) {
     return data(
       { error: "Unauthorized" },
       { status: 401, headers: getCorsHeaders(request) },
@@ -152,7 +154,7 @@ export async function handleReportLegit(request: Request) {
   }
 
   try {
-    let payload: any;
+    let payload: Record<string, string | null | undefined>;
     if (request.method === "GET") {
       const url = new URL(request.url);
       payload = {
@@ -160,7 +162,7 @@ export async function handleReportLegit(request: Request) {
         sourceUrl: url.searchParams.get("sourceUrl"),
       };
     } else {
-      payload = await request.json();
+      payload = await request.json() as Record<string, string | null | undefined>;
     }
 
     const normalizedValue = normalizePhone(payload.detectedNumber);

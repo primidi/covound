@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs, data } from "react-router";
-import { prisma } from "../db.server";
+import { getPrisma } from "../db.server";
 import { validateExtensionAccess } from "../lib/security.server";
 
 /**
@@ -19,14 +19,14 @@ function getCorsHeaders(request?: Request) {
  * Task 1: Build the Registry Sync API [FR3.2]
  * Exposes the verified contact registry for extension synchronization.
  */
-export async function loader(args: any) {
-  const request = args.request as Request;
-  const context = args.context;
+export async function loader({ request, context }: { request: Request; context: { cloudflare?: { env?: Record<string, string | undefined> } } }) {
+  const env = context?.cloudflare?.env;
+  const prisma = getPrisma(env);
 
   // EARLY AUTH: Validate the secret
   try {
     validateExtensionAccess(request);
-  } catch (_err: any) {
+  } catch (_err) {
     return data(
       { error: "Unauthorized" },
       { status: 401, headers: getCorsHeaders(request) },
@@ -58,7 +58,7 @@ export async function loader(args: any) {
   ]);
 
   // Map whitelist (Verified)
-  const whitelist = contacts.map((c: any) => ({
+  const whitelist = contacts.map((c) => ({
     value: c.whatsapp || c.phone || c.domain,
     type: c.whatsapp ? "whatsapp" : c.phone ? "phone" : "url",
     institution: c.institution?.name || "Official Entity",
@@ -66,7 +66,7 @@ export async function loader(args: any) {
   }));
 
   // Map blacklist (Scam)
-  const blacklist = rejectedAnomalies.map((a: any) => ({
+  const blacklist = rejectedAnomalies.map((a) => ({
     value: a.detectedNumber,
     type: "phone",
     institution: "Flagged Threat",

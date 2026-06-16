@@ -55,16 +55,19 @@ import {
 } from "react-router";
 import { toast } from "sonner";
 import { KYCModal } from "~/components/KYCModal";
-import { prisma } from "~/db.server";
+import { getPrisma } from "~/db.server";
 import { authClient } from "~/lib/auth.client";
-import { auth } from "~/lib/auth.server";
+import { getAuth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
 
 export const meta: MetaFunction = () => [
   { title: "CoVound | Investigator" },
 ];
 
-export async function loader({ request }: { request: Request }) {
+export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Record<string, string | undefined> } } }) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const [session, lang] = await Promise.all([
     auth.api.getSession({ headers: request.headers }),
     getLanguage(request),
@@ -165,7 +168,10 @@ export async function loader({ request }: { request: Request }) {
   return { user, anomalies: anomaliesWithContext, lang };
 }
 
-export async function action({ request }: { request: Request }) {
+export async function action({ request, context }: { request: Request; context: { cloudflare: { env: Record<string, string | undefined> } } }) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) throw new Response("Unauthorized", { status: 401 });
 

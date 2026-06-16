@@ -1,7 +1,8 @@
 import type { OfficialContactPoint } from "@covound/logic";
-import { prisma } from "~/db.server";
+import { getPrisma } from "~/db.server";
 
-export async function loader() {
+export async function loader({ context }: { context: { cloudflare?: { env?: Record<string, string | undefined> } } }) {
+  const prisma = getPrisma(context.cloudflare?.env);
   const [contacts, anomalies] = await Promise.all([
     prisma.verifiedContact.findMany({
       include: { institution: true },
@@ -13,7 +14,7 @@ export async function loader() {
     }),
   ]);
 
-  const verifiedEntries = contacts.map((c: any) => ({
+  const verifiedEntries = contacts.map((c) => ({
     type: (c.whatsapp
       ? "whatsapp"
       : c.phone
@@ -25,7 +26,7 @@ export async function loader() {
     status: "verified" as const,
   }));
 
-  const pendingEntries = anomalies.map((a: any) => ({
+  const pendingEntries = anomalies.map((a) => ({
     type: "whatsapp" as OfficialContactPoint["type"], // Default for now
     value: a.detectedNumber,
     institution: a.institution?.name || "Community Reported",

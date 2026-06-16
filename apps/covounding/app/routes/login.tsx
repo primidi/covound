@@ -25,11 +25,10 @@ import {
   redirect,
   useFetcher,
   useLoaderData,
-  useNavigate,
 } from "react-router";
-import { prisma } from "~/db.server";
+import { getPrisma } from "~/db.server";
 import { authClient } from "~/lib/auth.client";
-import { auth } from "~/lib/auth.server";
+import { getAuth } from "~/lib/auth.server";
 import { getLanguage } from "~/lib/language.server";
 
 import { toast } from "sonner";
@@ -91,7 +90,10 @@ const translations = {
   },
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const [session, lang] = await Promise.all([
     auth.api.getSession({ headers: request.headers }),
     getLanguage(request),
@@ -112,7 +114,10 @@ const rateLimitMap = new Map<string, number>();
 const _RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_ACCOUNTS_PER_IP = 10;
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context }: ActionFunctionArgs) {
+  const env = context.cloudflare.env;
+  const prisma = getPrisma(env);
+  const auth = getAuth(env);
   const formData = await request.formData();
   const intent = formData.get("intent");
 
@@ -246,7 +251,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate();
   const fetcher = useFetcher();
 
   const handleRoleChange = (newRole: UserRole) => {
@@ -257,7 +261,7 @@ export default function Login() {
   // Handle registration success
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data) {
-      const data = fetcher.data as any;
+      const data = fetcher.data as { success?: boolean; error?: string };
       if (data.success) {
         toast.success("Clinical Registration Complete", {
           description: "Please authenticate your credentials to establish Zero-Trust authority.",
